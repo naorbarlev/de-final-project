@@ -1,5 +1,5 @@
 .env
-test/
+tests/
 docker-compose.yaml
 filnal_project.drawio
 data/

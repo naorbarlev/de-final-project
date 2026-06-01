@@ -552,13 +552,13 @@ def parse_args():
     parser.add_argument(
         "--malicious-ip-rate",
         type=float,
-        default=0.0,
+        default=0.1,
         help="Probability that an external IP field uses a malicious IP.",
     )
     parser.add_argument(
         "--attack-probability",
         type=float,
-        default=0.03,
+        default=0.1,
         help="Chance to emit one fake malicious scenario on each loop.",
     )
     parser.add_argument(

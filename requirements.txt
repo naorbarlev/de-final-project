@@ -2,3 +2,5 @@ faker
 kafka-python
 python-dotenv
 requests
+minio
+elasticsearch
