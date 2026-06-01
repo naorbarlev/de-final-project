@@ -5,9 +5,9 @@ WORKDIR /app
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY src ./src
+COPY . .
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-ENTRYPOINT ["python", "src/sensors/corelight_logs_producer.py"]
+ENTRYPOINT ["python", "corelight_logs_producer.py"]

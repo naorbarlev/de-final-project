@@ -1,0 +1,5 @@
+faker
+kafka-python
+python-dotenv
+requests
+ipaddress
