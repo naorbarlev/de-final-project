@@ -5,15 +5,16 @@ import os
 from minio import Minio
 from datetime import datetime
 import io
+from utils import get_ioc_file_name
 
 dotenv.load_dotenv()
 
 API_URL = "https://threatfox-api.abuse.ch/api/v1/"
-BUCKET_NAME = "raw-icos"
+BUCKET_NAME = os.getenv("RAW_IOCS_BUCKET_NAME")
 THREATFOX_API_KEY = os.getenv("THREATFOX_API_KEY")
 MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY")
 MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
-MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "minio:9000")
+MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
 
 
 def pull_iocs(api_url, api_key, days=1):
@@ -36,12 +37,12 @@ def pull_iocs(api_url, api_key, days=1):
         raise Exception(f"Failed to pull IOCs: {response.status_code} - {response.text}")
 
 
-def create_file_name():
-    today = datetime.now()
-    folder_path = f"{today.year}/{today.month:02d}/{today.day:02d}/"
-    filename = f"iocs_{today.hour:02d}{today.minute:02d}.json"
-    object_name = f"{folder_path}{filename}"
-    return object_name
+# def create_file_name():
+#     today = datetime.now()
+#     folder_path = f"{today.year}/{today.month:02d}/{today.day:02d}/"
+#     filename = f"iocs_{today.hour:02d}{today.minute:02d}.json"
+#     object_name = f"{folder_path}{filename}"
+#     return object_name
 
 
 def upload_to_minio(data, bucket_name = "raw-icos"):
@@ -56,7 +57,7 @@ def upload_to_minio(data, bucket_name = "raw-icos"):
     json_str = json.dumps(data, ensure_ascii=False)
     json_bytes = json_str.encode("utf-8")  # convert string → bytes
     
-    object_name = create_file_name()
+    object_name = get_ioc_file_name(datetime.now())
 
     # Connect to MinIO
     client = Minio(

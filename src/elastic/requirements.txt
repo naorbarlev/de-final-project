@@ -1,4 +1,4 @@
 kafka-python
 python-dotenv
 requests
-elasticsearch
+elasticsearch==7.13.4
