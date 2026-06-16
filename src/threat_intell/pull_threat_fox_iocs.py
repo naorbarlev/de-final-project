@@ -1,26 +1,35 @@
+from urllib import response
+
+from elasticsearch import client
 import requests
 import json
 import dotenv
 import os
 from minio import Minio
-from datetime import datetime
+from datetime import datetime, timedelta
 import io
 from utils import get_ioc_file_name
 
 dotenv.load_dotenv()
 
 API_URL = "https://threatfox-api.abuse.ch/api/v1/"
-BUCKET_NAME = os.getenv("RAW_IOCS_BUCKET_NAME")
+BUCKET_NAME = os.getenv("IOCS_BUCKET_NAME")
 THREATFOX_API_KEY = os.getenv("THREATFOX_API_KEY")
 MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY")
 MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
 MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
+WATERMARK_OBJECT_NAME = "watermark.txt"
+date_format = "%Y-%m-%dT%H:%M:%S"
 
 
 def pull_iocs(api_url, api_key, days=1):
     
     if not api_key:
         raise ValueError("API key is required to pull IOCs from ThreatFox.")
+    
+    if not days or days < 1:
+        raise ValueError("Days parameter is required and must be a positive integer.")
+
     headers = {
         "Auth-Key": api_key,
         "Content-Type": "application/json"
@@ -37,15 +46,36 @@ def pull_iocs(api_url, api_key, days=1):
         raise Exception(f"Failed to pull IOCs: {response.status_code} - {response.text}")
 
 
-# def create_file_name():
-#     today = datetime.now()
-#     folder_path = f"{today.year}/{today.month:02d}/{today.day:02d}/"
-#     filename = f"iocs_{today.hour:02d}{today.minute:02d}.json"
-#     object_name = f"{folder_path}{filename}"
-#     return object_name
+def get_days_ago(timestamp):
+    
+    '''Calculate days passed since the given timestamp'''
+    if not timestamp and type(timestamp) != datetime:
+        return None
+    now = datetime.now()
+    delta = now - timestamp
+    return delta.days
 
 
-def upload_to_minio(data, bucket_name = "raw-icos"):
+def read_watermark_date(client, bucket_name, object_name):
+    try:
+        # Fetch the object from MinIO
+        response = client.get_object(bucket_name, object_name)
+        
+        # Read the content as raw bytes
+        file_bytes = response.read()
+        file_text = file_bytes.decode('utf-8')
+
+    finally:
+        response.close()
+        response.release_conn()
+    
+    if file_text:
+        return datetime.strptime(file_text, date_format)
+    else:
+        return None        
+    
+
+def upload_to_minio(client, data, bucket_name):
     
     if not data:
         print("No data to upload.")
@@ -58,14 +88,6 @@ def upload_to_minio(data, bucket_name = "raw-icos"):
     json_bytes = json_str.encode("utf-8")  # convert string → bytes
     
     object_name = get_ioc_file_name(datetime.now())
-
-    # Connect to MinIO
-    client = Minio(
-        endpoint=MINIO_ENDPOINT,
-        access_key=MINIO_ACCESS_KEY,
-        secret_key=MINIO_SECRET_KEY,
-        secure=False
-    )
       
     # Create bucket if not exists
     if not client.bucket_exists(bucket_name):
@@ -83,11 +105,32 @@ def upload_to_minio(data, bucket_name = "raw-icos"):
         print(f"Error uploading to MinIO: {e}")
         raise e
     
+    try:
+        new_watermark = datetime.now().strftime(date_format).encode("utf-8")
+        client.put_object(
+            bucket_name=bucket_name,
+            object_name=WATERMARK_OBJECT_NAME,
+            data=io.BytesIO(new_watermark),
+            length=len(new_watermark),
+            content_type="application/text"
+        )
+    except Exception as e:
+        raise e
+    
     print(f"Uploaded {object_name} to MinIO bucket '{bucket_name}'")
 
 
 if __name__ == "__main__":
-
-    iocs = pull_iocs(API_URL, THREATFOX_API_KEY, days=7)
+    
+    # Connect to MinIO
+    client = Minio(
+        endpoint=MINIO_ENDPOINT,
+        access_key=MINIO_ACCESS_KEY,
+        secret_key=MINIO_SECRET_KEY,
+        secure=False
+    )
+    watermark_date = read_watermark_date(client, bucket_name=BUCKET_NAME, object_name=WATERMARK_OBJECT_NAME)
+    days_since_watermark = get_days_ago(watermark_date)
+    iocs = pull_iocs(API_URL, THREATFOX_API_KEY, days=days_since_watermark)
     if iocs:
-        upload_to_minio(iocs, bucket_name=BUCKET_NAME)
+        upload_to_minio(client, iocs, bucket_name=BUCKET_NAME)

@@ -3,4 +3,4 @@ kafka-python
 python-dotenv
 requests
 minio
-elasticsearch
+elasticsearch==7.13.4
