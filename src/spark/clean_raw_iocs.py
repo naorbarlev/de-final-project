@@ -61,7 +61,30 @@ if __name__ == "__main__":
         print("No watermark found. Processing all available IOCs.")
         
     next_date = last_processed_date + timedelta(days=1) if last_processed_date else None
-    df = spark.read.json(f"s3a:///{BUCKET_NAME}/{RAW_IOCS_FOLDER_NAME}/year={last_processed_date.year}/month={last_processed_date.month:02d}/day={last_processed_date.day:02d}/*.json")
+    
+    # 2. Read the root path (Spark automatically identifies year, month, day columns)
+    df = spark.read.json(f"s3a://{BUCKET_NAME}/{CLEAN_IOCS_FOLDER_NAME}/")
+    
+    # 3. Create a temporary date column from partitions and filter
+    df_with_date = df.withColumn("folder_date", F.to_date(F.concat_ws("-", "year", "month", "day"), "yyyy-MM-dd"))
+    incremental_batch = df_with_date.filter(F.col("folder_date") > F.lit(next_date))
+    
+    # 4. Process and rewrite the watermark based on the data actually read
+    if not incremental_batch.isEmpty():
+        
+        # Save the batch data
+        incremental_batch.write.mode("append").parquet("s3a://my-bucket/output/processed_data/")
+        
+        # Find the maximum date present in this batch processing run
+        max_date = incremental_batch.select(F.max("folder_date")).collect()[0][0]
+        new_watermark_str = str(max_date)
+        
+        # Overwrite the watermark file
+        pass
+            
+        print(f"Watermark advanced to: {new_watermark_str}")
+    else:
+        print("No new partition data detected.")
     
     raw_iocs_df = load_iocs(last_processed_date)
     clean_iocs_df = clean_iocs(raw_iocs_df)

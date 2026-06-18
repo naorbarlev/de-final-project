@@ -8,7 +8,7 @@ import os
 from minio import Minio
 from datetime import datetime, timedelta
 import io
-from utils import get_ioc_file_name
+from utils import get_ioc_file_name, read_watermark_date
 
 dotenv.load_dotenv()
 
@@ -54,25 +54,7 @@ def get_days_ago(timestamp):
     now = datetime.now()
     delta = now - timestamp
     return delta.days
-
-
-def read_watermark_date(client, bucket_name, object_name):
-    try:
-        # Fetch the object from MinIO
-        response = client.get_object(bucket_name, object_name)
-        
-        # Read the content as raw bytes
-        file_bytes = response.read()
-        file_text = file_bytes.decode('utf-8')
-
-    finally:
-        response.close()
-        response.release_conn()
-    
-    if file_text:
-        return datetime.strptime(file_text, date_format)
-    else:
-        return None        
+     
     
 
 def upload_to_minio(client, data, bucket_name):
