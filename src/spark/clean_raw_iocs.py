@@ -1,13 +1,20 @@
+from pathlib import Path
+import sys
 from datetime import timedelta
 
-from pyspark.sql import SparkSession
+from pyspark.sql import DataFrame, SparkSession
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 import os
 from minio import Minio
 import json
 import dotenv
-from utils import read_watermark_date
+
+SRC_ROOT = Path(__file__).resolve().parents[1]
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from utils import read_watermark_date, write_watermark_date
 
 dotenv.load_dotenv()
 API_URL = "https://threatfox-api.abuse.ch/api/v1/"
@@ -20,12 +27,49 @@ MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
 last_processed_date_object_name = "last_processed_date.txt"
 
 
-def load_iocs(last_processed_date):
-    pass
+def find_new_iocs(current_df: DataFrame, clean_incremental_batch: DataFrame) -> DataFrame:
+    '''Find new IOCs by performing a left anti join between the current DataFrame and the clean incremental batch.'''
+    new_iocs_df = clean_incremental_batch.join(current_df, on="id", how="left_anti")
+    
+    if not new_iocs_df.isEmpty():
+        print(f"Found {new_iocs_df.count()} new IOCs.")
+        return new_iocs_df
+    else:
+        print("No new IOCs found.")
+        return spark.createDataFrame([], clean_incremental_batch.schema)
 
 
-def clean_iocs(df):
-    pass
+def update_last_seen_column(current_df: DataFrame, clean_incremental_batch: DataFrame) -> DataFrame:
+    '''Update the last_seen column in the current DataFrame based on the clean incremental batch.'''
+    updated_df = current_df.alias("current").join(
+        clean_incremental_batch.alias("incremental"),
+        on="id",
+        how="left"
+    ).withColumn(
+        "last_seen",
+        F.when(
+            F.col("incremental.last_seen").isNotNull(),
+            F.greatest(F.col("current.last_seen"), F.col("incremental.last_seen"))
+        ).otherwise(F.col("current.last_seen"))
+    ).select("current.*")  # Select only columns from the current DataFrame
+
+    return updated_df
+
+
+def clean_iocs(df: DataFrame) -> DataFrame:
+    
+    df = (
+        df.withColumn("reporter", F.when(F.col("reporter") == "anonymous", None).otherwise(F.col("reporter")))
+        .withColumn("last_seen", F.when(F.col("last_seen").isNull(), F.col("first_seen")).otherwise(F.col("last_seen")))
+        .withColumn("first_seen", F.to_timestamp(F.trim(F.regexp_replace(F.col("first_seen"), "UTC", "")), "yyyy-MM-dd HH:mm:ss"))
+        .withColumn("last_seen", F.to_timestamp(F.trim(F.regexp_replace(F.col("last_seen"), "UTC", "")), "yyyy-MM-dd HH:mm:ss"))
+        .withColumn("first_seen", F.timestamp_add("HOUR", F.col("first_seen"), 3)) # Adjusting for UTC+3 timezone
+        .withColumn("last_seen", F.timestamp_add("HOUR", F.col("last_seen"), 3)) # Adjusting for UTC+3 timezone
+        .withColumn("reference", F.when(F.col("reference") == "", None).otherwise(F.col("reporter")))
+        .withColumn("id", F.sha2(F.col("ioc"), 256))
+    )
+
+    return df
 
 
 def save_clean_iocs(df):
@@ -63,7 +107,7 @@ if __name__ == "__main__":
     next_date = last_processed_date + timedelta(days=1) if last_processed_date else None
     
     # 2. Read the root path (Spark automatically identifies year, month, day columns)
-    df = spark.read.json(f"s3a://{BUCKET_NAME}/{CLEAN_IOCS_FOLDER_NAME}/")
+    df = spark.read.json(f"s3a://{BUCKET_NAME}/{RAW_IOCS_FOLDER_NAME}/")
     
     # 3. Create a temporary date column from partitions and filter
     df_with_date = df.withColumn("folder_date", F.to_date(F.concat_ws("-", "year", "month", "day"), "yyyy-MM-dd"))
@@ -72,22 +116,25 @@ if __name__ == "__main__":
     # 4. Process and rewrite the watermark based on the data actually read
     if not incremental_batch.isEmpty():
         
-        # Save the batch data
-        incremental_batch.write.mode("append").parquet("s3a://my-bucket/output/processed_data/")
+        current_df = spark.read.parquet(f"s3a://{BUCKET_NAME}/{CLEAN_IOCS_FOLDER_NAME}/")
+        
+        clean_incremental_batch = clean_iocs(incremental_batch)
+        new_iocs_df = find_new_iocs(current_df, clean_incremental_batch)
+        current_df = update_last_seen_column(current_df, clean_incremental_batch)
+        union_df = new_iocs_df.union(current_df)
+        
+        # Save the snapshot replacement data
+        union_df.write.mode("overwrite").parquet(f"s3a://{BUCKET_NAME}/{CLEAN_IOCS_FOLDER_NAME}/")
         
         # Find the maximum date present in this batch processing run
         max_date = incremental_batch.select(F.max("folder_date")).collect()[0][0]
         new_watermark_str = str(max_date)
         
         # Overwrite the watermark file
-        pass
+        write_watermark_date(client, BUCKET_NAME, f"{CLEAN_IOCS_FOLDER_NAME}/{last_processed_date_object_name}", max_date)
             
         print(f"Watermark advanced to: {new_watermark_str}")
     else:
         print("No new partition data detected.")
     
-    raw_iocs_df = load_iocs(last_processed_date)
-    clean_iocs_df = clean_iocs(raw_iocs_df)
-    save_clean_iocs(clean_iocs_df)
-
 

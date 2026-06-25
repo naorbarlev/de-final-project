@@ -1,36 +1,23 @@
 import argparse
 import base64
 import json
+import os
 import random
 import time
 import uuid
 from datetime import datetime, timedelta, timezone
 from ipaddress import ip_address, ip_network
 
+import dotenv
 from faker import Faker
 from kafka import KafkaProducer
 
 fake = Faker()
+dotenv.load_dotenv()
 
-DEMO_MALICIOUS_IPS = [
-    "45.155.205.233",
-    "185.220.101.42",
-    "194.26.192.64",
-    "89.248.165.74",
-    "193.32.162.149",
-]
-
-EXFIL_DOMAINS = [
-    "backup-sync-cloud.example",
-    "cdn-upload-gateway.example",
-    "fileshare-update.example",
-]
-
-MALICIOUS_DOMAINS = [
-    "update-checker-cloud.example",
-    "cdn-telemetry-sync.example",
-    "secure-file-gateway.example",
-]
+DEMO_MALICIOUS_IPS = os.getenv("DEMO_MALICIOUS_IPS", "").split(",")
+EXFIL_DOMAINS = os.getenv("DEMO_EXFIL_DOMAINS", "").split(",")
+MALICIOUS_DOMAINS = os.getenv("MALICIOUS_DOMAINS", "").split(",")
 
 
 class CorelightLogGenerator:
