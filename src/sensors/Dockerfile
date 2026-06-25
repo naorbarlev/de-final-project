@@ -2,10 +2,11 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY requirements.txt ./
+COPY src/sensors/requirements.txt ./
+COPY src/logger.py ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY src/sensors/ ./
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1

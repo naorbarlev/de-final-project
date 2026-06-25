@@ -1,9 +1,18 @@
+import sys
+from pathlib import Path
 from kafka import KafkaConsumer
 from elasticsearch import Elasticsearch
-import json
 import os
 import dotenv
 
+SRC_ROOT = Path(__file__).resolve().parents[1]
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from logger import get_logger
+
+
+logger = get_logger(__name__)
 dotenv.load_dotenv()
 
 KAFKA_BROKER = os.getenv('KAFKA_BROKER')
@@ -22,15 +31,15 @@ def wait_for_elasticsearch(es_client, retries=30, delay=5):
     for attempt in range(1, retries + 1):
         try:
             if es_client.ping():
-                print(f"Elasticsearch reachable (attempt {attempt})")
+                logger.info(f"Elasticsearch reachable (attempt {attempt})")
                 return True
         except Exception as e:
-            print(f"Elasticsearch ping failed (attempt {attempt}): {e}")
+            logger.error(f"Elasticsearch ping failed (attempt {attempt}): {e}")
         time.sleep(delay)
     raise RuntimeError("Elasticsearch not reachable after retries")
 
 def consume_from_kafka():
-    print("Consuming data from Kafka...")
+    logger.info("Consuming data from Kafka...")
     for message in consumer:
         log = message.value
         es.index(index=es_index, body=log)  # Index data into Elasticsearch
@@ -44,16 +53,16 @@ def es_index_get_or_create(index_name):
     
         # Create the index with mapping
         es.indices.create(index=index_name)
-        print(f"Created Elasticsearch index: {index_name} with custom mapping")
+        logger.info(f"Created Elasticsearch index: {index_name} with custom mapping")
 
 
 if __name__ == "__main__":
     # Ensure Elasticsearch is up before proceeding
-    print(f"Waiting for Elasticsearch at {ELASTICSEARCH_HOST}:9200...")
+    logger.info(f"Waiting for Elasticsearch at {ELASTICSEARCH_HOST}:9200...")
     try:
         wait_for_elasticsearch(es)
     except RuntimeError as e:
-        print(f"ERROR: {e}")
+        logger.error(f"ERROR: {e}")
         raise
 
     # create Kafka consumer after ES is available

@@ -13,7 +13,8 @@ SRC_ROOT = Path(__file__).resolve().parents[1]
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
-from utils import read_watermark_date, write_watermark_date, get_logger
+from utils import read_watermark_date, write_watermark_date
+from logger import get_logger
 
 dotenv.load_dotenv()
 logger = get_logger(__name__)

@@ -16,7 +16,7 @@ SRC_ROOT = Path(__file__).resolve().parents[1]
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
-from utils import get_logger
+from logger import get_logger
 
 fake = Faker()
 logger = get_logger(__name__)

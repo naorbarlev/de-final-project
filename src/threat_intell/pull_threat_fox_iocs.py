@@ -16,8 +16,8 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
     
 from utils import get_ioc_file_name, read_watermark_date, write_watermark_date
-
-
+from logger import get_logger
+logger = get_logger(__name__)
 
 API_URL = "https://threatfox-api.abuse.ch/api/v1/"
 BUCKET_NAME = os.getenv("IOCS_BUCKET_NAME")
