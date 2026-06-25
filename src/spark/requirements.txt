@@ -1,0 +1,5 @@
+kafka-python
+python-dotenv
+requests
+minio
+elasticsearch==7.13.4

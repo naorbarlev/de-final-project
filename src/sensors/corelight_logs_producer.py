@@ -2,17 +2,24 @@ import argparse
 import base64
 import json
 import os
+from pathlib import Path
 import random
+import sys
 import time
 import uuid
 from datetime import datetime, timedelta, timezone
 from ipaddress import ip_address, ip_network
-
 import dotenv
 from faker import Faker
 from kafka import KafkaProducer
+SRC_ROOT = Path(__file__).resolve().parents[1]
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from utils import get_logger
 
 fake = Faker()
+logger = get_logger(__name__)
 dotenv.load_dotenv()
 
 DEMO_MALICIOUS_IPS = os.getenv("DEMO_MALICIOUS_IPS", "").split(",")
@@ -573,11 +580,11 @@ def send_random_attack_scenario(segments):
 
 def main():
     """Create three segment generators and stream sample logs to Kafka."""
-    print("Starting Corelight Kafka demo log generator...")
+    logger.info("Starting Corelight Kafka demo log generator...")
     args = parse_args()
-    print("Using Kafka bootstrap servers:", args.bootstrap_servers)
+    logger.info("Using Kafka bootstrap servers: %s", args.bootstrap_servers)
     producer = build_producer(args.bootstrap_servers)
-    print("Kafka producer created. Beginning to send logs...")
+    logger.info("Kafka producer created. Beginning to send logs...")
     
 
     segments = [

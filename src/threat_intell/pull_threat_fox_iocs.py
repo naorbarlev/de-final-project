@@ -124,7 +124,10 @@ if __name__ == "__main__":
     if days_since_watermark == 0:
         print("All IOCs are up to date. No new data to pull.")
         sys.exit(0)
-    print(f"Days since last watermark: {days_since_watermark}")
+    
+    if days_since_watermark is None:
+        print("No watermark found. Pulling IOCs for the last 7 days.")
+        days_since_watermark = 7
     iocs = pull_iocs(API_URL, THREATFOX_API_KEY, days=days_since_watermark)
     if iocs:
         upload_iocs_to_minio(client, iocs, bucket_name=BUCKET_NAME)

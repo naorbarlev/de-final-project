@@ -1,22 +1,22 @@
 from pathlib import Path
 import sys
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from pyspark.sql import DataFrame, SparkSession
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 import os
 from minio import Minio
-import json
 import dotenv
 
 SRC_ROOT = Path(__file__).resolve().parents[1]
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
-from utils import read_watermark_date, write_watermark_date
+from utils import read_watermark_date, write_watermark_date, get_logger
 
 dotenv.load_dotenv()
+logger = get_logger(__name__)
 API_URL = "https://threatfox-api.abuse.ch/api/v1/"
 BUCKET_NAME = os.getenv("IOCS_BUCKET_NAME")
 RAW_IOCS_FOLDER_NAME = os.getenv("RAW_IOCS_FOLDER_NAME")
@@ -24,6 +24,7 @@ CLEAN_IOCS_FOLDER_NAME = os.getenv("CLEAN_IOCS_FOLDER_NAME")
 MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY")
 MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
 MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
+CLEAN_IOCS_PARQUET_FILES = os.getenv("CLEAN_IOCS_PARQUET_FILES")
 last_processed_date_object_name = "last_processed_date.txt"
 
 
@@ -59,16 +60,19 @@ def update_last_seen_column(current_df: DataFrame, clean_incremental_batch: Data
 def clean_iocs(df: DataFrame) -> DataFrame:
     
     df = (
-        df.withColumn("reporter", F.when(F.col("reporter") == "anonymous", None).otherwise(F.col("reporter")))
+        df.withColumn("dict", F.explode(F.col("data")))
+        .select("dict.*")
+        .withColumn("reporter", F.when(F.col("reporter") == "anonymous", None).otherwise(F.col("reporter")))
         .withColumn("last_seen", F.when(F.col("last_seen").isNull(), F.col("first_seen")).otherwise(F.col("last_seen")))
         .withColumn("first_seen", F.to_timestamp(F.trim(F.regexp_replace(F.col("first_seen"), "UTC", "")), "yyyy-MM-dd HH:mm:ss"))
         .withColumn("last_seen", F.to_timestamp(F.trim(F.regexp_replace(F.col("last_seen"), "UTC", "")), "yyyy-MM-dd HH:mm:ss"))
-        .withColumn("first_seen", F.timestamp_add("HOUR", F.col("first_seen"), 3)) # Adjusting for UTC+3 timezone
-        .withColumn("last_seen", F.timestamp_add("HOUR", F.col("last_seen"), 3)) # Adjusting for UTC+3 timezone
+        .withColumn("first_seen", F.expr("timestampadd(HOUR, 3, first_seen)"))# Adjusting for UTC+3 timezone 
+        .withColumn("last_seen", F.expr("timestampadd(HOUR, 3, last_seen)")) # Adjusting for UTC+3 timezone
         .withColumn("reference", F.when(F.col("reference") == "", None).otherwise(F.col("reporter")))
         .withColumn("id", F.sha2(F.col("ioc"), 256))
+        .withColumn("confidence_level", F.col("confidence_level").cast(T.IntegerType()))
+        .drop("dict", "data", "query_status", "year", "month", "day", "folder_date")
     )
-
     return df
 
 
@@ -80,6 +84,7 @@ if __name__ == "__main__":
     spark = SparkSession.builder.appName("CleanRawIOCs").getOrCreate()
     # Configure Hadoop properties to establish connection to MinIO
     sc = spark.sparkContext
+    sc.setLogLevel("ERROR")
     hadoop_conf = sc._jsc.hadoopConfiguration()
 
     # Core MinIO server connection parameters
@@ -92,6 +97,7 @@ if __name__ == "__main__":
     hadoop_conf.set("fs.s3a.connection.ssl.enabled", "false") # Set true if your MinIO has SSL certificates
     hadoop_conf.set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
     
+
     # Connect to MinIO
     client = Minio(
         endpoint=MINIO_ENDPOINT,
@@ -101,30 +107,35 @@ if __name__ == "__main__":
     )
     
     last_processed_date = read_watermark_date(client, BUCKET_NAME, f"{CLEAN_IOCS_FOLDER_NAME}/{last_processed_date_object_name}")
+    write_mode = "append" if last_processed_date else "overwrite"
+    print(f"Last processed date: {last_processed_date}, Write mode: {write_mode}")
     if not last_processed_date:
-        print("No watermark found. Processing all available IOCs.")
-        
+        print("No watermark found. Assuming this is the first run. Processing all available data.")
+        last_processed_date = datetime(1970, 1, 1)  # Set to epoch start for first run
+
     next_date = last_processed_date + timedelta(days=1) if last_processed_date else None
     
-    # 2. Read the root path (Spark automatically identifies year, month, day columns)
-    df = spark.read.json(f"s3a://{BUCKET_NAME}/{RAW_IOCS_FOLDER_NAME}/")
+    raw_iocs_data_frame = spark.read.json(f"s3a://{BUCKET_NAME}/{RAW_IOCS_FOLDER_NAME}/")
     
-    # 3. Create a temporary date column from partitions and filter
-    df_with_date = df.withColumn("folder_date", F.to_date(F.concat_ws("-", "year", "month", "day"), "yyyy-MM-dd"))
+    df_with_date = raw_iocs_data_frame.withColumn("folder_date", F.to_date(F.concat_ws("-", "year", "month", "day"), "yyyy-M-dd"))
     incremental_batch = df_with_date.filter(F.col("folder_date") > F.lit(next_date))
     
-    # 4. Process and rewrite the watermark based on the data actually read
     if not incremental_batch.isEmpty():
         
-        current_df = spark.read.parquet(f"s3a://{BUCKET_NAME}/{CLEAN_IOCS_FOLDER_NAME}/")
-        
-        clean_incremental_batch = clean_iocs(incremental_batch)
-        new_iocs_df = find_new_iocs(current_df, clean_incremental_batch)
-        current_df = update_last_seen_column(current_df, clean_incremental_batch)
-        union_df = new_iocs_df.union(current_df)
+        if write_mode == "append":
+            print("Appending new clean IOCs data.")
+            current_df = spark.read.parquet(f"s3a://{BUCKET_NAME}/{CLEAN_IOCS_PARQUET_FILES}/")
+            clean_incremental_batch = clean_iocs(incremental_batch)
+            new_iocs_df = find_new_iocs(current_df, clean_incremental_batch)
+            current_df = update_last_seen_column(current_df, clean_incremental_batch)
+            union_df = new_iocs_df.union(current_df)
+            
+        if write_mode == "overwrite":
+            print("Overwriting clean IOCs data.")
+            union_df = clean_iocs(incremental_batch)
         
         # Save the snapshot replacement data
-        union_df.write.mode("overwrite").parquet(f"s3a://{BUCKET_NAME}/{CLEAN_IOCS_FOLDER_NAME}/")
+        union_df.write.mode(write_mode).parquet(f"s3a://{BUCKET_NAME}/{CLEAN_IOCS_PARQUET_FILES}/")
         
         # Find the maximum date present in this batch processing run
         max_date = incremental_batch.select(F.max("folder_date")).collect()[0][0]
@@ -134,7 +145,9 @@ if __name__ == "__main__":
         write_watermark_date(client, BUCKET_NAME, f"{CLEAN_IOCS_FOLDER_NAME}/{last_processed_date_object_name}", max_date)
             
         print(f"Watermark advanced to: {new_watermark_str}")
+        spark.stop()
     else:
         print("No new partition data detected.")
+        spark.stop()
     
 

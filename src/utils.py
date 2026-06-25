@@ -3,6 +3,8 @@ from minio.error import S3Error
 import io
 import dotenv
 import os
+import logging
+import sys
 
 dotenv.load_dotenv()
 
@@ -19,32 +21,36 @@ def get_ioc_file_name(day: datetime):
 def read_watermark_date(client, bucket_name, object_name, date_format="%Y-%m-%dT%H:%M:%S"):
     file_bytes = None
     file_text = None
+    response = None
     try:
         # Fetch the object from MinIO
         response = client.get_object(bucket_name, object_name)
-        if response.status != 200:
-            
-            response = client.get_object(bucket_name, object_name)
-            
-        # Read the content as raw bytes
-        file_bytes = response.read()
-        file_text = file_bytes.decode('utf-8')
-    except S3Error as e:
-        if e.code == "NoSuchKey":
-            write_watermark_date(client, bucket_name, object_name, datetime.now())
-            response = client.get_object(bucket_name, object_name)
+        print(f"response.status: {response.status}")
+        if response.status == 200:
+            # Read the content as raw bytes
             file_bytes = response.read()
             file_text = file_bytes.decode('utf-8')
         else:
+            print(f"Failed to read watermark file '{object_name}' from bucket '{bucket_name}'. HTTP status: {response.status}")
+            return None
+            
+    except S3Error as e:
+        if e.code == "NoSuchKey":
+            print(f"Watermark file '{object_name}' not found in bucket '{bucket_name}'. Returning None.")
+            return None
+        else:
             raise e
     finally:
-        response.close()
-        response.release_conn()
-    
+        if response is not None:
+            response.close()
+            response.release_conn()
+
+    print(f"Watermark file '{object_name}' content: {file_text}")
     if file_text:
         return datetime.strptime(file_text, date_format)
     else:
-        raise ValueError(f"Watermark file {object_name} is empty or not found in bucket {bucket_name}.")
+        print(f"Watermark file '{object_name}' is empty. Returning None.")
+        return None
 
 
 def write_watermark_date(client, bucket_name, object_name, date: datetime, date_format="%Y-%m-%dT%H:%M:%S"):
@@ -56,4 +62,27 @@ def write_watermark_date(client, bucket_name, object_name, date: datetime, date_
             length=len(new_watermark),
             content_type="application/text"
         )
+    
+    
+
+def get_logger(name: str) -> logging.Logger:
+    """Creates a standardized logger that outputs to stdout for Docker compatibility."""
+    logger = logging.getLogger(name)
+    
+    # Prevent duplicate logs if the logger is initialized multiple times
+    if not logger.handlers:
+        logger.setLevel(logging.INFO)
+        
+        # Create a clean, readable format
+        formatter = logging.Formatter(
+            fmt="%(asctime)s - %(levelname)s - [%(name)s:%(lineno)d] - %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S"
+        )
+        
+        # Stream directly to stdout so Docker can capture it instantly
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        
+    return logger
     
