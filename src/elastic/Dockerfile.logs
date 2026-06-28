@@ -6,7 +6,6 @@ COPY src/elastic/requirements.txt ./
 COPY src/logger.py ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-
 COPY src/elastic/ ./
 
 ENV PYTHONDONTWRITEBYTECODE=1

@@ -16,10 +16,10 @@ logger = get_logger(__name__)
 dotenv.load_dotenv()
 
 KAFKA_BROKER = os.getenv('KAFKA_BROKER')
-KAFKA_TOPIC = os.getenv('ALERTS_TOPIC')
+NETWORK_LOGS_TOPIC = os.getenv('ALERTS_TOPIC')
 ELASTICSEARCH_HOST = os.getenv('ELASTICSEARCH_HOST', 'elasticsearch')
 
-consumer = KafkaConsumer(KAFKA_TOPIC, bootstrap_servers=KAFKA_BROKER)
+consumer = KafkaConsumer(NETWORK_LOGS_TOPIC, bootstrap_servers=KAFKA_BROKER)
 
 es = Elasticsearch([{'host': ELASTICSEARCH_HOST, 'port': 9200, 'scheme': 'http'}])
 es_index = os.getenv('ELASTICSEARCH_ALERTS_INDEX')
@@ -66,6 +66,6 @@ if __name__ == "__main__":
         raise
 
     # create Kafka consumer after ES is available
-    consumer = KafkaConsumer(KAFKA_TOPIC, bootstrap_servers=KAFKA_BROKER)
+    consumer = KafkaConsumer(NETWORK_LOGS_TOPIC, bootstrap_servers=KAFKA_BROKER)
     es_index_get_or_create(es_index)
     consume_from_kafka()

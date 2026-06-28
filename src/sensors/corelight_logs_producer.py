@@ -12,6 +12,7 @@ from ipaddress import ip_address, ip_network
 import dotenv
 from faker import Faker
 from kafka import KafkaProducer
+
 SRC_ROOT = Path(__file__).resolve().parents[1]
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
@@ -25,6 +26,11 @@ dotenv.load_dotenv()
 DEMO_MALICIOUS_IPS = os.getenv("DEMO_MALICIOUS_IPS", "").split(",")
 EXFIL_DOMAINS = os.getenv("DEMO_EXFIL_DOMAINS", "").split(",")
 MALICIOUS_DOMAINS = os.getenv("MALICIOUS_DOMAINS", "").split(",")
+KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BROKER") 
+NETWORK_LOGS_TOPIC = os.getenv("NETWORK_LOGS_TOPIC")
+LOG_INTERVAL_MIN_SECONDS = float(os.getenv("LOG_INTERVAL_MIN_SECONDS"))
+LOG_INTERVAL_MAX_SECONDS = float(os.getenv("LOG_INTERVAL_MAX_SECONDS"))
+
 
 
 class CorelightLogGenerator:
@@ -529,20 +535,22 @@ class CorelightLogGenerator:
         }[status_code]
 
 
-def build_producer(bootstrap_servers):
+def build_producer():
     """Create a Kafka producer that serializes log records as JSON bytes."""
     return KafkaProducer(
-        bootstrap_servers=bootstrap_servers,
-        value_serializer=lambda record: json.dumps(record).encode("utf-8")
+        bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
+        value_serializer=lambda record: json.dumps(record).encode("utf-8"),
     )
 
 
+def get_random_log_interval():
+    """Return a random delay between log generation bursts."""
+    return random.uniform(LOG_INTERVAL_MIN_SECONDS, LOG_INTERVAL_MAX_SECONDS)
+
+
 def parse_args():
-    """Parse command-line options for Kafka and log generation settings."""
+    """Parse command-line options for log generation settings."""
     parser = argparse.ArgumentParser(description="Generate demo Corelight logs to Kafka.")
-    parser.add_argument("--bootstrap-servers", default=["localhost:9092"])
-    parser.add_argument("--topic", default="network-logs")
-    parser.add_argument("--interval", type=float, default=1.0)
     parser.add_argument(
         "--malicious-ip-rate",
         type=float,
@@ -558,7 +566,7 @@ def parse_args():
     parser.add_argument(
         "--max-attack-events",
         type=int,
-        default=3,
+        default=10,
         help="Maximum fake malicious scenarios to emit before returning to background only.",
     )
     return parser.parse_args()
@@ -582,8 +590,8 @@ def main():
     """Create three segment generators and stream sample logs to Kafka."""
     logger.info("Starting Corelight Kafka demo log generator...")
     args = parse_args()
-    logger.info("Using Kafka bootstrap servers: %s", args.bootstrap_servers)
-    producer = build_producer(args.bootstrap_servers)
+    logger.info("Using Kafka bootstrap servers: %s", KAFKA_BOOTSTRAP_SERVERS)
+    producer = build_producer()
     logger.info("Kafka producer created. Beginning to send logs...")
     
 
@@ -591,7 +599,7 @@ def main():
         CorelightLogGenerator(
             "corp-users",
             "10.10.10.0/24",
-            args.topic,
+            NETWORK_LOGS_TOPIC,
             producer,
             DEMO_MALICIOUS_IPS,
             args.malicious_ip_rate,
@@ -599,7 +607,7 @@ def main():
         CorelightLogGenerator(
             "datacenter",
             "10.20.20.0/24",
-            args.topic,
+            NETWORK_LOGS_TOPIC,
             producer,
             DEMO_MALICIOUS_IPS,
             args.malicious_ip_rate,
@@ -607,7 +615,7 @@ def main():
         CorelightLogGenerator(
             "dmz",
             "10.30.30.0/24",
-            args.topic,
+            NETWORK_LOGS_TOPIC,
             producer,
             DEMO_MALICIOUS_IPS,
             args.malicious_ip_rate,
@@ -625,12 +633,11 @@ def main():
                 send_random_attack_scenario(segments)
                 attack_events_sent += 1
             producer.flush()
-            time.sleep(args.interval)
+            time.sleep(get_random_log_interval())
     finally:
         producer.close()
 
 
 if __name__ == "__main__":
-    # python3 corelight_kafka_demo.py --topic network-logs --interval 0.5
     main()
     
