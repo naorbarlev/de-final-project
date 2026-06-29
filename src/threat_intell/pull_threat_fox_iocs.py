@@ -67,7 +67,7 @@ def get_days_ago(timestamp):
 def upload_iocs_to_minio(client, data, bucket_name):
     
     if not data:
-        print("No data to upload.")
+        logger.info("No data to upload.")
         return
     
     if not MINIO_ACCESS_KEY or not MINIO_SECRET_KEY:
@@ -79,7 +79,7 @@ def upload_iocs_to_minio(client, data, bucket_name):
     
     object_name = get_ioc_file_name(datetime.now())
     
-    print(len(json_bytes))
+    logger.info(f"Uploading {len(json_bytes)} bytes to MinIO")
       
     # Create bucket if not exists
     if not client.bucket_exists(bucket_name):
@@ -93,14 +93,14 @@ def upload_iocs_to_minio(client, data, bucket_name):
             length=len(json_bytes),  # Length of the data in bytes
             content_type="application/json"
         )
-        print(f"Uploaded {object_name} to MinIO bucket '{bucket_name}'")
+        logger.info(f"Uploaded {object_name} to MinIO bucket '{bucket_name}'")
     except Exception as e:
-        print(f"Error uploading to MinIO: {e}")
+        logger.error(f"Error uploading to MinIO: {e}")
         raise e
     
     try:
         write_watermark_date(client, BUCKET_NAME, f"{RAW_IOCS_FOLDER_NAME}/{WATERMARK_OBJECT_NAME}", datetime.now())
-        print(f"Watermark updated to: {datetime.now()}")
+        logger.info(f"Watermark updated to: {datetime.now()}")
     except Exception as e:
         raise e
     
@@ -116,17 +116,17 @@ if __name__ == "__main__":
             secure=False
         )
     except Exception as e:
-        print(f"Error connecting to MinIO: {e}")
+        logger.error(f"Error connecting to MinIO: {e}")
         sys.exit(1)
     
     watermark_date = read_watermark_date(client, bucket_name=BUCKET_NAME, object_name=f"{RAW_IOCS_FOLDER_NAME}/{WATERMARK_OBJECT_NAME}")
     days_since_watermark = get_days_ago(watermark_date)
     if days_since_watermark == 0:
-        print("All IOCs are up to date. No new data to pull.")
+        logger.info("All IOCs are up to date. No new data to pull.")
         sys.exit(0)
     
     if days_since_watermark is None:
-        print("No watermark found. Pulling IOCs for the last 7 days.")
+        logger.info("No watermark found. Pulling IOCs for the last 7 days.")
         days_since_watermark = 7
     iocs = pull_iocs(API_URL, THREATFOX_API_KEY, days=days_since_watermark)
     if iocs:

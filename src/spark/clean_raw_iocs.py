@@ -1,7 +1,6 @@
 from pathlib import Path
 import sys
 from datetime import datetime, timedelta
-
 from pyspark.sql import DataFrame, SparkSession
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
@@ -18,6 +17,8 @@ from logger import get_logger
 
 dotenv.load_dotenv()
 logger = get_logger(__name__)
+
+
 API_URL = "https://threatfox-api.abuse.ch/api/v1/"
 BUCKET_NAME = os.getenv("IOCS_BUCKET_NAME")
 RAW_IOCS_FOLDER_NAME = os.getenv("RAW_IOCS_FOLDER_NAME")
@@ -34,10 +35,10 @@ def find_new_iocs(current_df: DataFrame, clean_incremental_batch: DataFrame) -> 
     new_iocs_df = clean_incremental_batch.join(current_df, on="id", how="left_anti")
     
     if not new_iocs_df.isEmpty():
-        print(f"Found {new_iocs_df.count()} new IOCs.")
+        logger.info(f"Found {new_iocs_df.count()} new IOCs.")
         return new_iocs_df
     else:
-        print("No new IOCs found.")
+        logger.info("No new IOCs found.")
         return spark.createDataFrame([], clean_incremental_batch.schema)
 
 
@@ -109,9 +110,9 @@ if __name__ == "__main__":
     
     last_processed_date = read_watermark_date(client, BUCKET_NAME, f"{CLEAN_IOCS_FOLDER_NAME}/{last_processed_date_object_name}")
     write_mode = "append" if last_processed_date else "overwrite"
-    print(f"Last processed date: {last_processed_date}, Write mode: {write_mode}")
+    logger.info(f"Last processed date: {last_processed_date}, Write mode: {write_mode}")
     if not last_processed_date:
-        print("No watermark found. Assuming this is the first run. Processing all available data.")
+        logger.info("No watermark found. Assuming this is the first run. Processing all available data.")
         last_processed_date = datetime(1970, 1, 1)  # Set to epoch start for first run
 
     next_date = last_processed_date + timedelta(days=1) if last_processed_date else None
@@ -124,7 +125,7 @@ if __name__ == "__main__":
     if not incremental_batch.isEmpty():
         
         if write_mode == "append":
-            print("Appending new clean IOCs data.")
+            logger.info("Appending new clean IOCs data.")
             current_df = spark.read.parquet(f"s3a://{BUCKET_NAME}/{CLEAN_IOCS_PARQUET_FILES}/")
             clean_incremental_batch = clean_iocs(incremental_batch)
             new_iocs_df = find_new_iocs(current_df, clean_incremental_batch)
@@ -132,7 +133,7 @@ if __name__ == "__main__":
             union_df = new_iocs_df.union(current_df)
             
         if write_mode == "overwrite":
-            print("Overwriting clean IOCs data.")
+            logger.info("Overwriting clean IOCs data.")
             union_df = clean_iocs(incremental_batch)
         
         # Save the snapshot replacement data
@@ -145,10 +146,10 @@ if __name__ == "__main__":
         # Overwrite the watermark file
         write_watermark_date(client, BUCKET_NAME, f"{CLEAN_IOCS_FOLDER_NAME}/{last_processed_date_object_name}", max_date)
             
-        print(f"Watermark advanced to: {new_watermark_str}")
+        logger.info(f"Watermark advanced to: {new_watermark_str}")
         spark.stop()
     else:
-        print("No new partition data detected.")
+        logger.info("No new partition data detected.")
         spark.stop()
     
 

@@ -4,7 +4,7 @@ import sys
 
 
 def get_logger(name: str) -> logging.Logger:
-    """Creates a standardized logger that outputs to stdout for Docker compatibility."""
+    """Creates a standardized logger that outputs to stdout"""
     logger = logging.getLogger(name)
     
     # Prevent duplicate logs if the logger is initialized multiple times

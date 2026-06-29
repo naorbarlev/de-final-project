@@ -43,7 +43,7 @@ def consume_from_kafka():
     for message in consumer:
         log = message.value
         es.index(index=es_index, body=log)  # Index data into Elasticsearch
-        # Here you can add code to process the received data as needed
+
 
 
 def es_index_get_or_create(index_name):

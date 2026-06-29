@@ -5,6 +5,9 @@ import dotenv
 import os
 import logging
 import sys
+from logger import get_logger
+
+logger = get_logger(__name__)
 
 dotenv.load_dotenv()
 
@@ -25,18 +28,18 @@ def read_watermark_date(client, bucket_name, object_name, date_format="%Y-%m-%dT
     try:
         # Fetch the object from MinIO
         response = client.get_object(bucket_name, object_name)
-        print(f"response.status: {response.status}")
+        logger.info(f"response.status: {response.status}")
         if response.status == 200:
             # Read the content as raw bytes
             file_bytes = response.read()
             file_text = file_bytes.decode('utf-8')
         else:
-            print(f"Failed to read watermark file '{object_name}' from bucket '{bucket_name}'. HTTP status: {response.status}")
+            logger.info(f"Failed to read watermark file '{object_name}' from bucket '{bucket_name}'. HTTP status: {response.status}")
             return None
             
     except S3Error as e:
         if e.code == "NoSuchKey":
-            print(f"Watermark file '{object_name}' not found in bucket '{bucket_name}'. Returning None.")
+            logger.info(f"Watermark file '{object_name}' not found in bucket '{bucket_name}'. Returning None.")
             return None
         else:
             raise e
@@ -45,11 +48,11 @@ def read_watermark_date(client, bucket_name, object_name, date_format="%Y-%m-%dT
             response.close()
             response.release_conn()
 
-    print(f"Watermark file '{object_name}' content: {file_text}")
+    logger.info(f"Watermark file '{object_name}' content: {file_text}")
     if file_text:
         return datetime.strptime(file_text, date_format)
     else:
-        print(f"Watermark file '{object_name}' is empty. Returning None.")
+        logger.info(f"Watermark file '{object_name}' is empty. Returning None.")
         return None
 
 
