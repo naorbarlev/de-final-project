@@ -308,19 +308,21 @@ class CorelightLogGenerator:
                 }
             )
 
-    def send_data_exfiltration_demo(self, source_ip=None, destination_ip=None, chunk_count=None):
+    def send_data_exfiltration_demo(self, source_ip=None, destination_ip=None, chunk_count=None, uid=None):
         """Send fake logs for one source exfiltrating data in a short time window."""
         orig_h = source_ip or self._random_host()
         resp_h = destination_ip or random.choice(self.malicious_ips or DEMO_MALICIOUS_IPS)
         domain = random.choice(EXFIL_DOMAINS)
         chunks = chunk_count or random.randint(3, 6)
         base_time = datetime.now(timezone.utc)
+        scenario_uid = uid or self._uid()
 
         self.send_log(
             self._dns_resolution_log(
                 orig_h,
                 domain,
                 resp_h,
+                uid=scenario_uid,
                 ts=self._format_timestamp(base_time),
             )
         )
@@ -331,11 +333,12 @@ class CorelightLogGenerator:
                 resp_h,
                 domain,
                 self._format_timestamp(base_time + timedelta(seconds=index * 2)),
+                scenario_uid,
             )
 
-    def _send_data_exfiltration_chunk(self, orig_h, resp_h, domain, ts):
+    def _send_data_exfiltration_chunk(self, orig_h, resp_h, domain, ts, uid=None):
         """Send one fake upload chunk for a data exfiltration scenario."""
-        uid = self._uid()
+        uid = uid or self._uid()
         orig_p = random.randint(49152, 65535)
         exfil_bytes = random.randint(15_000_000, 120_000_000)
         request_fuid = self._file_uid()
