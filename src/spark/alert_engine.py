@@ -34,11 +34,10 @@ DATA_EXFIl_THRESHOLD = 100_000_000 #Bytes
 def port_scan_detection(batch_df: DataFrame) -> DataFrame:
     logger.info("Starting port scan detection")
     scan_counts = (
-        batch_df.withWatermark("ts", "10 minutes")
+        batch_df.withWatermark("ts", "3 minutes")
         .groupBy(F.window(F.col("ts"), "1 minute"), F.col("id_orig_h"), F.col("id_resp_h"))
         .agg(
             F.approx_count_distinct(F.col("id_resp_p")).alias("port_count"),
-            F.first("uid").alias("log_uid"),
             F.min("ts").alias("event_ts")
         )
     )
@@ -56,7 +55,6 @@ def port_scan_detection(batch_df: DataFrame) -> DataFrame:
         F.sha2(
             F.concat(
                 F.col("alert_ts"),
-                F.col("log_uid"),
                 F.col("id_orig_h"),
                 F.col("id_resp_h")
             ),
@@ -66,13 +64,11 @@ def port_scan_detection(batch_df: DataFrame) -> DataFrame:
     alerts_df = alerts_df.withColumn("ioc_score", F.lit(None).cast(T.IntegerType()))
     alerts_df = alerts_df.withColumn("ioc_source", F.array_repeat(F.lit(None).cast(T.StringType()), 0))
     alerts_df = alerts_df.withColumn("ioc_value", F.array_repeat(F.lit(None).cast(T.StringType()), 0))
-    alerts_df = alerts_df.withColumn("tags", F.array(F.lit("port_scan")))
+    alerts_df = alerts_df.withColumn("tags", F.array(F.lit("port_scan"), F.concat_ws(":", F.lit("ports_count"), F.col("port_count"))))
     
-    logger.info("Port scanning detection found")
-
     return alerts_df.select(
         "alert_id",
-        "log_uid",
+        F.lit(None).alias("log_uid"),
         "alert_type",
         "severity",
         "alert_ts",
@@ -90,14 +86,14 @@ def data_exfiltration_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataF
     normalized_ioc_df = preper_ioc_df(ioc_df)
 
     exfil_summary = (
-        batch_df.withWatermark("ts", "10 minutes")
+        batch_df.withWatermark("ts", "5 minutes")
         .groupBy(F.window(F.col("ts"), "2 minute"), F.col("id_orig_h"), F.col("id_resp_h"))
         .agg(
             F.sum(F.col("orig_bytes")).alias("total_orig_bytes"),
             F.first("uid").alias("log_uid"),
             F.min("ts").alias("event_ts"),
-            F.first(F.col("query")).alias("query"),
-            F.first(F.col("host")).alias("host")
+            F.collect_set(F.col("query")).alias("queries"),
+            F.collect_set(F.col("host")).alias("hosts")
         )
     )
 
@@ -105,12 +101,12 @@ def data_exfiltration_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataF
 
     match_condition = (
         (F.col("id_resp_h") == F.col("ioc_for_match"))
-        | (F.col("query") == F.col("ioc_for_match"))
-        | (F.col("host") == F.col("ioc_for_match"))
+        | (F.array_contains(F.col("queries"), F.col("ioc_for_match")))
+        | (F.array_contains(F.col("hosts"), F.col("ioc_for_match")))
     )
 
     alerts_df = alerts_df.join(
-        normalized_ioc_df.alias("ioc"),
+        normalized_ioc_df.alias("iocs"),
         on=match_condition,
         how="left"
     )
@@ -122,13 +118,11 @@ def data_exfiltration_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataF
             F.col("id_resp_h"),
             F.col("log_uid"),
             F.col("event_ts"),
-            F.col("query"),
-            F.col("host"),
             F.col("total_orig_bytes")
         )
         .agg(
             F.max("confidence_level").alias("ioc_score"),
-            F.collect_set("ioc").alias("ioc_value"),
+            F.collect_set(F.col("iocs.ioc")).alias("ioc_value"),
             F.collect_set("reporter").alias("ioc_source"),
             F.max(F.when(F.col("is_compromised"), 1).otherwise(0)).cast(T.BooleanType()).alias("is_compromised")
         )
@@ -137,7 +131,10 @@ def data_exfiltration_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataF
     alerts_df = alerts_df.withColumn("alert_type", F.lit("Data Exfiltration"))
     alerts_df = alerts_df.withColumn(
         "severity",
-        F.when(F.col("total_orig_bytes") > DATA_EXFIl_THRESHOLD * 2, F.lit("High")).otherwise(F.lit("Medium"))
+        F.when(
+            (F.col("total_orig_bytes") > DATA_EXFIl_THRESHOLD * 2) | F.col("is_compromised"),
+            F.lit("High")
+        ).otherwise(F.lit("Medium"))
     )
     alerts_df = alerts_df.withColumn("alert_ts", F.current_timestamp())
     alerts_df = alerts_df.withColumn(
@@ -197,7 +194,7 @@ def ioc_match_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
             F.col("answer"),
             F.col("host")
         )
-        .drop_duplicates()
+        .dropDuplicatesWithinWatermark()
     )
 
     match_condition = (
@@ -213,7 +210,7 @@ def ioc_match_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
         how="inner"
     )
 
-    # 2. ADDED TIME WINDOW TO GROUPBY
+
     aggregated_df = matched_df.groupBy(
         F.window(F.col("ts"), "1 minute"),
         F.col("uid")
@@ -221,7 +218,7 @@ def ioc_match_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
         F.first("resp_ip").alias("resp_ip"),
         F.first("orig_ip").alias("orig_ip"),
         F.first("ts").alias("event_ts"),
-        F.array_distinct(F.flatten(F.collect_list("tags"))).alias("tags"),
+        F.array_distinct(F.flatten(F.collect_list(F.coalesce(F.col("iocs.tags"), F.array())))).alias("tags"),
         F.collect_set("ioc").alias("ioc_value"),
         F.collect_set("reporter").alias("ioc_source"),
         F.max("confidence_level").alias("ioc_score"),
@@ -240,10 +237,7 @@ def ioc_match_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
         "alert_id",
         F.sha2(F.concat(F.col("alert_ts"), F.col("uid"), F.col("resp_ip")), 256)
     )
-    logger.info("IOC match detection found")
 
-    # The final select automatically ignores the newly introduced "window" column, 
-    # keeping the schema perfectly aligned with your other DataFrames for the union.
     return aggregated_df.select(
         "alert_id",
         F.col("uid").alias("log_uid"),
