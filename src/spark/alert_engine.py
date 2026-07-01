@@ -27,22 +27,23 @@ MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
 MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
 CLEAN_IOCS_PARQUET_FILES = os.getenv("CLEAN_IOCS_PARQUET_FILES")
 BUCKET_NAME = os.getenv("IOCS_BUCKET_NAME")
-MAX_PORT_THRESHOLD = 4
+MAX_PORT_THRESHOLD = 3
 DATA_EXFIl_THRESHOLD = 100_000_000 #Bytes
 
 
 def port_scan_detection(batch_df: DataFrame) -> DataFrame:
     logger.info("Starting port scan detection")
-    scan_counts = (
-        batch_df.withWatermark("ts", "10 minutes")
-        .groupBy(F.window(F.col("ts"), "2 minute"), F.col("id_orig_h"), F.col("id_resp_h"))
+
+    alerts_df = (
+        batch_df.withWatermark("ts", "30 seconds")
+        .groupBy(F.window(F.col("ts"), "1 minutes"), F.col("id_orig_h"), F.col("id_resp_h"))
         .agg(
-            F.approx_count_distinct(F.col("id_resp_p")).alias("port_count"),
+            F.count(F.col("id_resp_p")).alias("port_count"),
             F.min("ts").alias("event_ts")
         )
     )
 
-    alerts_df = scan_counts.filter(F.col("port_count") >= MAX_PORT_THRESHOLD)
+    alerts_df = alerts_df.filter(F.col("port_count") >= MAX_PORT_THRESHOLD)
 
     alerts_df = alerts_df.withColumn("alert_type", F.lit("Port Scanning"))
     alerts_df = alerts_df.withColumn(
@@ -260,7 +261,6 @@ if __name__ == "__main__":
     # Initialize Spark Session
     spark = SparkSession.builder \
         .appName("KafkaToKafkaStreaming") \
-        .config("spark.sql.legacy.timeParserPolicy", "LEGACY") \
         .getOrCreate()
         
     sc = spark.sparkContext
@@ -290,17 +290,12 @@ if __name__ == "__main__":
         .option("failOnDataLoss", "false") \
         .load()
 
-    # parsed_df = df \
-    #     .selectExpr("CAST(value AS STRING) as json_str") \
-    #     .select(F.from_json(F.col("json_str"), WIDE_SCHEMA).alias("data")) \
-    #     .select("data.*")
-
     parsed_df = df \
         .selectExpr("CAST(value AS STRING) as json_str") \
         .select(F.from_json(
             F.col("json_str"), 
             WIDE_SCHEMA,
-            options={"timestampFormat": "yyyy-MM-dd'T'HH:mm:ss.SSSX"}
+            options={"timestampFormat": "yyyy-MM-dd'T'HH:mm:ss.SSSSSSX"}
         ).alias("data")) \
         .select("data.*")
 
@@ -312,81 +307,35 @@ if __name__ == "__main__":
         "id.resp_h": "id_resp_h",
         "id.resp_p": "id_resp_p"
     })
-    scan_counts = (
-        parsed_df.groupBy(F.window(F.col("ts"), "2 minute"), F.col("id_orig_h"), F.col("id_resp_h"))
-        .agg(
-            F.approx_count_distinct(F.col("id_resp_p")).alias("port_count"),
-            F.min("ts").alias("event_ts")
-        )
-    )
-
-    # alerts_df = scan_counts.filter(F.col("port_count") >= MAX_PORT_THRESHOLD)
-
-    alerts_df = scan_counts.withColumn("alert_type", F.lit("Port Scanning"))
-    alerts_df = alerts_df.withColumn(
-        "severity",
-        F.when(F.col("port_count") > MAX_PORT_THRESHOLD * 1.5, F.lit("High")).otherwise(F.lit("Medium"))
-    )
-    alerts_df = alerts_df.withColumn("alert_ts", F.current_timestamp())
-    alerts_df = alerts_df.withColumn(
-        "alert_id",
-        F.sha2(
-            F.concat(
-                F.col("alert_ts"),
-                F.col("id_orig_h"),
-                F.col("id_resp_h")
-            ),
-            256
-        )
-    )
-    alerts_df = alerts_df.withColumn("ioc_score", F.lit(None).cast(T.IntegerType()))
-    alerts_df = alerts_df.withColumn("ioc_source", F.array_repeat(F.lit(None).cast(T.StringType()), 0))
-    alerts_df = alerts_df.withColumn("ioc_value", F.array_repeat(F.lit(None).cast(T.StringType()), 0))
-    alerts_df = alerts_df.withColumn("tags", F.array(F.lit("port_scan"), F.concat_ws(":", F.lit("ports_count"), F.col("port_count"))))
     
-    alerts_df = alerts_df.select(
-        "alert_id",
-        F.lit(None).alias("log_uid"),
-        "alert_type",
-        "severity",
-        "alert_ts",
-        "event_ts",
-        F.col("id_orig_h").alias("orig_ip"),
-        F.col("id_resp_h").alias("resp_ip"),
-        "ioc_score",
-        "ioc_source",
-        "ioc_value",
-        "tags"
-    )
     
     # ioc_match_alert_df = ioc_match_detection(parsed_df, ioc_df)
-    # port_scan_alert_df = port_scan_detection(parsed_df)
+    port_scan_alert_df = port_scan_detection(parsed_df)
     # data_exfiltration_alert_df = data_exfiltration_detection(parsed_df, ioc_df)
     
     # alerts_df = ioc_match_alert_df.unionByName(port_scan_alert_df).unionByName(data_exfiltration_alert_df)
-    # alerts_df = port_scan_alert_df
+    alerts_df = port_scan_alert_df
 
     # scan_counts = (
-    #     parsed_df
+    #     parsed_df.withWatermark("ts", "1 minute")
     #     .groupBy(
     #         F.window("ts", "1 minute"),
-    #         "id_orig_h",
-    #         "id_resp_h"
+    #         "uid"
     #     ).agg(
     #         F.count("*").alias("rows"),
     #         F.approx_count_distinct("id_resp_p").alias("ports")
     #     )
-    # )
+    # ).withColumn("event_ts", F.lit(datetime.now()))
 
     # query = scan_counts.writeStream \
     #     .format("console") \
-    #     .outputMode("complete") \
     #     .option("truncate", False) \
     #     .start()    
     
-    kafka_output_df = alerts_df.select(
-        F.to_json(F.struct("*")).alias("value")
-    )
+    # kafka_output_df = alerts_df.select(
+    #     F.to_json(F.struct("*")).alias("value")
+    # )
+    
 
     # Write stream to Kafka
     # query = kafka_output_df.writeStream \
@@ -398,7 +347,7 @@ if __name__ == "__main__":
 
     query = alerts_df.writeStream \
         .format("console") \
-        .outputMode("update") \
+        .outputMode("append") \
         .option("truncate", "false") \
         .start()
 
@@ -413,5 +362,5 @@ if __name__ == "__main__":
     # docker exec -it spark spark-submit /opt/bitnami/spark/apps/alert_engine.py
 
 
-
+    # סיכוי טוב מאוד שהזמן שמגיע מהסנסור לא מתפרסר נכון וגודל קצת
     # TODO: debu the code => https://gemini.google.com/app/c600e0d60fe930c5?utm_source=app_launcher&utm_medium=owned&utm_campaign=base_all

@@ -611,12 +611,14 @@ def main():
     ]
     try:
         attack_events_sent = 0
-        logger.info("Waiting 60 seconds before sending logs...")
+        logger.info("Waiting 20 seconds before sending logs...")
         time.sleep(20)
         logger.info("Attack events should appear in Elasticsearch now!")
         while True:
-            for segment in segments:
-                segment.send_sample_batch()
+            
+            for _ in range(random.randint(1, 100)):
+                for segment in segments:
+                    segment.send_sample_batch()
             if (
                 attack_events_sent < args.max_attack_events
                 and random.random() < args.attack_probability
