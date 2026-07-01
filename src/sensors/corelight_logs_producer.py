@@ -43,7 +43,6 @@ class CorelightLogGenerator:
         kafka_topic,
         producer,
         malicious_ips=None,
-        malicious_ip_rate=0.0,
     ):
         """Create a generator for one network segment and Kafka destination."""
         self.segment_name = segment_name
@@ -51,7 +50,6 @@ class CorelightLogGenerator:
         self.kafka_topic = kafka_topic
         self.producer = producer
         self.malicious_ips = malicious_ips or []
-        self.malicious_ip_rate = malicious_ip_rate
 
     def generate_conn_log(self, flow=None):
         """Build one Corelight conn log record for the provided or generated flow."""
@@ -459,9 +457,7 @@ class CorelightLogGenerator:
         return str(random.choice(hosts))
 
     def _external_ip(self):
-        """Return a public IP, occasionally from the malicious IP pool."""
-        if self.malicious_ips and random.random() < self.malicious_ip_rate:
-            return random.choice(self.malicious_ips)
+        """Return a public IP"""
         return fake.ipv4_public()
 
     def _is_local_ip(self, ip_value):
@@ -555,15 +551,9 @@ def parse_args():
     """Parse command-line options for log generation settings."""
     parser = argparse.ArgumentParser(description="Generate demo Corelight logs to Kafka.")
     parser.add_argument(
-        "--malicious-ip-rate",
-        type=float,
-        default=0.1,
-        help="Probability that an external IP field uses a malicious IP.",
-    )
-    parser.add_argument(
         "--attack-probability",
         type=float,
-        default=0.1,
+        default=0.3,
         help="Chance to emit one fake malicious scenario on each loop.",
     )
     parser.add_argument(
@@ -580,14 +570,12 @@ def send_random_attack_scenario(segments):
     segment = random.choice(segments)
     scenario = random.choice(
         [
-            segment.send_reach_malicious_ip_demo,
+            # segment.send_reach_malicious_ip_demo,
             segment.send_port_scan_demo,
-            segment.send_data_exfiltration_demo,
+            # segment.send_data_exfiltration_demo,
         ]
     )
     scenario()
-
-
 
 def main():
     """Create three segment generators and stream sample logs to Kafka."""
@@ -604,8 +592,7 @@ def main():
             "10.10.10.0/24",
             NETWORK_LOGS_TOPIC,
             producer,
-            DEMO_MALICIOUS_IPS,
-            args.malicious_ip_rate,
+            DEMO_MALICIOUS_IPS
         ),
         CorelightLogGenerator(
             "datacenter",
@@ -613,7 +600,6 @@ def main():
             NETWORK_LOGS_TOPIC,
             producer,
             DEMO_MALICIOUS_IPS,
-            args.malicious_ip_rate,
         ),
         CorelightLogGenerator(
             "dmz",
@@ -621,11 +607,13 @@ def main():
             NETWORK_LOGS_TOPIC,
             producer,
             DEMO_MALICIOUS_IPS,
-            args.malicious_ip_rate,
         ),
     ]
     try:
         attack_events_sent = 0
+        logger.info("Waiting 60 seconds before sending logs...")
+        time.sleep(20)
+        logger.info("Attack events should appear in Elasticsearch now!")
         while True:
             for segment in segments:
                 segment.send_sample_batch()
@@ -635,6 +623,7 @@ def main():
             ):
                 send_random_attack_scenario(segments)
                 attack_events_sent += 1
+                logger.info(f"Attack event sent. Total attack events sent: {attack_events_sent}")
             producer.flush()
             time.sleep(get_random_log_interval())
     finally:

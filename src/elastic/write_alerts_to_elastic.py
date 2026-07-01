@@ -16,10 +16,10 @@ logger = get_logger(__name__)
 dotenv.load_dotenv()
 
 KAFKA_BROKER = os.getenv('KAFKA_BROKER')
-NETWORK_LOGS_TOPIC = os.getenv('ALERTS_TOPIC')
+ALERTS_TOPIC = os.getenv('ALERTS_TOPIC')
 ELASTICSEARCH_HOST = os.getenv('ELASTICSEARCH_HOST', 'elasticsearch')
 
-consumer = KafkaConsumer(NETWORK_LOGS_TOPIC, bootstrap_servers=KAFKA_BROKER)
+consumer = None
 
 es = Elasticsearch([{'host': ELASTICSEARCH_HOST, 'port': 9200, 'scheme': 'http'}])
 es_index = os.getenv('ELASTICSEARCH_ALERTS_INDEX')
@@ -41,18 +41,59 @@ def wait_for_elasticsearch(es_client, retries=30, delay=5):
 def consume_from_kafka():
     logger.info("Consuming data from Kafka...")
     for message in consumer:
+        logger.info(f"Offset: {message.offset}")   
         log = message.value
         es.index(index=es_index, body=log)  # Index data into Elasticsearch
-
 
 
 def es_index_get_or_create(index_name):
     if not es.indices.exists(index=index_name):
         # Define mapping
-        # mapping = {}
+        mapping = {
+            "mappings": {
+                "properties": {
+                    "alert_id": {
+                        "type": "keyword"
+                    },
+                    "log_uid": {
+                        "type": "keyword"
+                    },
+                    "alert_type": {
+                        "type": "keyword"
+                    },
+                    "severity": {
+                        "type": "keyword"
+                    },
+                    "alert_ts": {
+                        "type": "date"
+                    },
+                    "event_ts": {
+                        "type": "date"
+                    },
+                    "orig_ip": {
+                        "type": "ip"
+                    },
+                    "resp_ip": {
+                        "type": "ip"
+                    },
+                    "ioc_score": {
+                        "type": "integer"
+                    },
+                    "ioc_source": {
+                        "type": "keyword"
+                    },
+                    "ioc_value": {
+                        "type": "keyword"
+                    },
+                    "tags": {
+                        "type": "keyword"
+                    }
+                }
+            }
+        }
     
         # Create the index with mapping
-        es.indices.create(index=index_name)
+        es.indices.create(index=index_name, body=mapping)
         logger.info(f"Created Elasticsearch index: {index_name} with custom mapping")
 
 
@@ -66,6 +107,6 @@ if __name__ == "__main__":
         raise
 
     # create Kafka consumer after ES is available
-    consumer = KafkaConsumer(NETWORK_LOGS_TOPIC, bootstrap_servers=KAFKA_BROKER)
+    consumer = KafkaConsumer(ALERTS_TOPIC, bootstrap_servers=KAFKA_BROKER)
     es_index_get_or_create(es_index)
     consume_from_kafka()

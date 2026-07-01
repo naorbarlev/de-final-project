@@ -27,22 +27,22 @@ MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
 MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
 CLEAN_IOCS_PARQUET_FILES = os.getenv("CLEAN_IOCS_PARQUET_FILES")
 BUCKET_NAME = os.getenv("IOCS_BUCKET_NAME")
-MAX_PORT_THRESHOLD = 10
+MAX_PORT_THRESHOLD = 4
 DATA_EXFIl_THRESHOLD = 100_000_000 #Bytes
 
 
 def port_scan_detection(batch_df: DataFrame) -> DataFrame:
     logger.info("Starting port scan detection")
     scan_counts = (
-        batch_df.withWatermark("ts", "3 minutes")
-        .groupBy(F.window(F.col("ts"), "1 minute"), F.col("id_orig_h"), F.col("id_resp_h"))
+        batch_df.withWatermark("ts", "10 minutes")
+        .groupBy(F.window(F.col("ts"), "2 minute"), F.col("id_orig_h"), F.col("id_resp_h"))
         .agg(
             F.approx_count_distinct(F.col("id_resp_p")).alias("port_count"),
             F.min("ts").alias("event_ts")
         )
     )
 
-    alerts_df = scan_counts.filter(F.col("port_count") > MAX_PORT_THRESHOLD)
+    alerts_df = scan_counts.filter(F.col("port_count") >= MAX_PORT_THRESHOLD)
 
     alerts_df = alerts_df.withColumn("alert_type", F.lit("Port Scanning"))
     alerts_df = alerts_df.withColumn(
@@ -86,7 +86,7 @@ def data_exfiltration_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataF
     normalized_ioc_df = preper_ioc_df(ioc_df)
 
     exfil_summary = (
-        batch_df.withWatermark("ts", "5 minutes")
+        batch_df.withWatermark("ts", "3 minutes")
         .groupBy(F.window(F.col("ts"), "2 minute"), F.col("id_orig_h"), F.col("id_resp_h"))
         .agg(
             F.sum(F.col("orig_bytes")).alias("total_orig_bytes"),
@@ -150,7 +150,6 @@ def data_exfiltration_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataF
         )
     )
     alerts_df = alerts_df.withColumn("tags", F.array(F.lit("data_exfiltration")))
-    logger.info("Data exfiltration detection produced")
 
     return alerts_df.select(
         "alert_id",
@@ -183,7 +182,7 @@ def ioc_match_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
     normalized_ioc_df = preper_ioc_df(ioc_df)
 
     event_df = (
-        batch_df.withWatermark("ts", "10 minutes")
+        batch_df.withWatermark("ts", "1 minutes")
         .withColumn("answer", F.explode_outer(F.col("answers")))
         .select(
             F.col("uid"),
@@ -226,7 +225,6 @@ def ioc_match_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
     )
 
     aggregated_df = aggregated_df.withColumn("alert_type", F.lit("IOC Match"))
-    logger.info("IOC match detection produced")
     
     aggregated_df = aggregated_df.withColumn(
         "severity",
@@ -262,6 +260,7 @@ if __name__ == "__main__":
     # Initialize Spark Session
     spark = SparkSession.builder \
         .appName("KafkaToKafkaStreaming") \
+        .config("spark.sql.legacy.timeParserPolicy", "LEGACY") \
         .getOrCreate()
         
     sc = spark.sparkContext
@@ -277,6 +276,8 @@ if __name__ == "__main__":
     hadoop_conf.set("fs.s3a.connection.ssl.enabled", "false") # Set true if your MinIO has SSL certificates
     hadoop_conf.set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
     
+
+    # while True:
     logger.info("Loading IOC database from MinIO")
     ioc_df = load_ioc_db(spark=spark)
     
@@ -286,11 +287,21 @@ if __name__ == "__main__":
         .option("kafka.bootstrap.servers", KAFKA_BROKER) \
         .option("subscribe", NETWORK_LOGS_TOPIC) \
         .option("startingOffsets", "latest") \
+        .option("failOnDataLoss", "false") \
         .load()
+
+    # parsed_df = df \
+    #     .selectExpr("CAST(value AS STRING) as json_str") \
+    #     .select(F.from_json(F.col("json_str"), WIDE_SCHEMA).alias("data")) \
+    #     .select("data.*")
 
     parsed_df = df \
         .selectExpr("CAST(value AS STRING) as json_str") \
-        .select(F.from_json(F.col("json_str"), WIDE_SCHEMA).alias("data")) \
+        .select(F.from_json(
+            F.col("json_str"), 
+            WIDE_SCHEMA,
+            options={"timestampFormat": "yyyy-MM-dd'T'HH:mm:ss.SSSX"}
+        ).alias("data")) \
         .select("data.*")
 
     logger.info("Parsed network stream into a DataFrame")
@@ -301,24 +312,106 @@ if __name__ == "__main__":
         "id.resp_h": "id_resp_h",
         "id.resp_p": "id_resp_p"
     })
+    scan_counts = (
+        parsed_df.groupBy(F.window(F.col("ts"), "2 minute"), F.col("id_orig_h"), F.col("id_resp_h"))
+        .agg(
+            F.approx_count_distinct(F.col("id_resp_p")).alias("port_count"),
+            F.min("ts").alias("event_ts")
+        )
+    )
+
+    # alerts_df = scan_counts.filter(F.col("port_count") >= MAX_PORT_THRESHOLD)
+
+    alerts_df = scan_counts.withColumn("alert_type", F.lit("Port Scanning"))
+    alerts_df = alerts_df.withColumn(
+        "severity",
+        F.when(F.col("port_count") > MAX_PORT_THRESHOLD * 1.5, F.lit("High")).otherwise(F.lit("Medium"))
+    )
+    alerts_df = alerts_df.withColumn("alert_ts", F.current_timestamp())
+    alerts_df = alerts_df.withColumn(
+        "alert_id",
+        F.sha2(
+            F.concat(
+                F.col("alert_ts"),
+                F.col("id_orig_h"),
+                F.col("id_resp_h")
+            ),
+            256
+        )
+    )
+    alerts_df = alerts_df.withColumn("ioc_score", F.lit(None).cast(T.IntegerType()))
+    alerts_df = alerts_df.withColumn("ioc_source", F.array_repeat(F.lit(None).cast(T.StringType()), 0))
+    alerts_df = alerts_df.withColumn("ioc_value", F.array_repeat(F.lit(None).cast(T.StringType()), 0))
+    alerts_df = alerts_df.withColumn("tags", F.array(F.lit("port_scan"), F.concat_ws(":", F.lit("ports_count"), F.col("port_count"))))
     
-    ioc_match_alert_df = ioc_match_detection(parsed_df, ioc_df)
-    port_scan_alert_df = port_scan_detection(parsed_df)
-    data_exfiltration_alert_df = data_exfiltration_detection(parsed_df, ioc_df)
+    alerts_df = alerts_df.select(
+        "alert_id",
+        F.lit(None).alias("log_uid"),
+        "alert_type",
+        "severity",
+        "alert_ts",
+        "event_ts",
+        F.col("id_orig_h").alias("orig_ip"),
+        F.col("id_resp_h").alias("resp_ip"),
+        "ioc_score",
+        "ioc_source",
+        "ioc_value",
+        "tags"
+    )
     
-    alerts_df = ioc_match_alert_df.unionByName(port_scan_alert_df).unionByName(data_exfiltration_alert_df)
+    # ioc_match_alert_df = ioc_match_detection(parsed_df, ioc_df)
+    # port_scan_alert_df = port_scan_detection(parsed_df)
+    # data_exfiltration_alert_df = data_exfiltration_detection(parsed_df, ioc_df)
+    
+    # alerts_df = ioc_match_alert_df.unionByName(port_scan_alert_df).unionByName(data_exfiltration_alert_df)
+    # alerts_df = port_scan_alert_df
+
+    # scan_counts = (
+    #     parsed_df
+    #     .groupBy(
+    #         F.window("ts", "1 minute"),
+    #         "id_orig_h",
+    #         "id_resp_h"
+    #     ).agg(
+    #         F.count("*").alias("rows"),
+    #         F.approx_count_distinct("id_resp_p").alias("ports")
+    #     )
+    # )
+
+    # query = scan_counts.writeStream \
+    #     .format("console") \
+    #     .outputMode("complete") \
+    #     .option("truncate", False) \
+    #     .start()    
     
     kafka_output_df = alerts_df.select(
         F.to_json(F.struct("*")).alias("value")
     )
 
     # Write stream to Kafka
-    query = kafka_output_df.writeStream \
-        .format("kafka") \
-        .option("kafka.bootstrap.servers", KAFKA_BROKER) \
-        .option("topic", ALERTS_TOPIC) \
-        .option("checkpointLocation", "/tmp/checkpoints/kafka_logs") \
+    # query = kafka_output_df.writeStream \
+    #     .format("kafka") \
+    #     .option("kafka.bootstrap.servers", KAFKA_BROKER) \
+    #     .option("topic", ALERTS_TOPIC) \
+    #     .option("checkpointLocation", f"s3a://{BUCKET_NAME}/checkpoints/kafka_logs_test") \
+    #     .start()
+
+    query = alerts_df.writeStream \
+        .format("console") \
+        .outputMode("update") \
+        .option("truncate", "false") \
         .start()
 
+
+
+    # logger.info("Spark streaming query started. Will reload IOCs in 3 hours.")
     query.awaitTermination()
+        # query.awaitTermination(timeout=3 * 60 * 60)
+        
+        # logger.info("3 hours passed. Stopping query to refresh IOC database...")
+        # query.stop()
     # docker exec -it spark spark-submit /opt/bitnami/spark/apps/alert_engine.py
+
+
+
+    # TODO: debu the code => https://gemini.google.com/app/c600e0d60fe930c5?utm_source=app_launcher&utm_medium=owned&utm_campaign=base_all
