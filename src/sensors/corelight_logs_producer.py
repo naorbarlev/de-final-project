@@ -41,15 +41,13 @@ class CorelightLogGenerator:
         segment_name,
         cidr,
         kafka_topic,
-        producer,
-        malicious_ips=None,
+        producer
     ):
         """Create a generator for one network segment and Kafka destination."""
         self.segment_name = segment_name
         self.network = ip_network(cidr)
         self.kafka_topic = kafka_topic
         self.producer = producer
-        self.malicious_ips = malicious_ips or []
 
     def generate_conn_log(self, flow=None):
         """Build one Corelight conn log record for the provided or generated flow."""
@@ -188,7 +186,7 @@ class CorelightLogGenerator:
     def send_reach_malicious_ip_demo(self, source_ip=None, destination_ip=None):
         """Send fake logs for one internal host reaching a malicious IP."""
         orig_h = source_ip or self._random_host()
-        resp_h = destination_ip or random.choice(self.malicious_ips or DEMO_MALICIOUS_IPS)
+        resp_h = destination_ip or random.choice(DEMO_MALICIOUS_IPS)
         domain = random.choice(MALICIOUS_DOMAINS)
         uid = self._uid()
         orig_p = random.randint(49152, 65535)
@@ -309,7 +307,7 @@ class CorelightLogGenerator:
     def send_data_exfiltration_demo(self, source_ip=None, destination_ip=None, chunk_count=None, uid=None):
         """Send fake logs for one source exfiltrating data in a short time window."""
         orig_h = source_ip or self._random_host()
-        resp_h = destination_ip or random.choice(self.malicious_ips or DEMO_MALICIOUS_IPS)
+        resp_h = destination_ip or random.choice(DEMO_MALICIOUS_IPS)
         domain = random.choice(EXFIL_DOMAINS)
         chunks = chunk_count or random.randint(3, 6)
         base_time = datetime.now(timezone.utc)
@@ -572,9 +570,10 @@ def send_random_attack_scenario(segments):
         [
             # segment.send_reach_malicious_ip_demo,
             segment.send_port_scan_demo,
-            # segment.send_data_exfiltration_demo,
+            segment.send_data_exfiltration_demo,
         ]
     )
+    logger.info(f"Sending attack scenario: {scenario.__name__}")
     scenario()
 
 def main():
@@ -591,22 +590,19 @@ def main():
             "corp-users",
             "10.10.10.0/24",
             NETWORK_LOGS_TOPIC,
-            producer,
-            DEMO_MALICIOUS_IPS
+            producer
         ),
         CorelightLogGenerator(
             "datacenter",
             "10.20.20.0/24",
             NETWORK_LOGS_TOPIC,
-            producer,
-            DEMO_MALICIOUS_IPS,
+            producer
         ),
         CorelightLogGenerator(
             "dmz",
             "10.30.30.0/24",
             NETWORK_LOGS_TOPIC,
-            producer,
-            DEMO_MALICIOUS_IPS,
+            producer
         ),
     ]
     try:
@@ -625,7 +621,6 @@ def main():
             ):
                 send_random_attack_scenario(segments)
                 attack_events_sent += 1
-                logger.info(f"Attack event sent. Total attack events sent: {attack_events_sent}")
             producer.flush()
             time.sleep(get_random_log_interval())
     finally:

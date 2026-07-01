@@ -27,8 +27,8 @@ MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
 MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
 CLEAN_IOCS_PARQUET_FILES = os.getenv("CLEAN_IOCS_PARQUET_FILES")
 BUCKET_NAME = os.getenv("IOCS_BUCKET_NAME")
-MAX_PORT_THRESHOLD = 3
-DATA_EXFIl_THRESHOLD = 100_000_000 #Bytes
+MAX_PORT_THRESHOLD = 8
+DATA_EXFIl_THRESHOLD = 100_000_000 # Bytes
 
 
 def port_scan_detection(batch_df: DataFrame) -> DataFrame:
@@ -38,7 +38,7 @@ def port_scan_detection(batch_df: DataFrame) -> DataFrame:
         batch_df.withWatermark("ts", "30 seconds")
         .groupBy(F.window(F.col("ts"), "1 minutes"), F.col("id_orig_h"), F.col("id_resp_h"))
         .agg(
-            F.count(F.col("id_resp_p")).alias("port_count"),
+            F.approx_count_distinct(F.col("id_resp_p")).alias("port_count"),
             F.min("ts").alias("event_ts")
         )
     )
@@ -82,13 +82,12 @@ def port_scan_detection(batch_df: DataFrame) -> DataFrame:
         "tags"
     )
 
-def data_exfiltration_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
+def data_exfiltration_detection(batch_df: DataFrame) -> DataFrame:
     logger.info("Starting data exfiltration detection")
-    normalized_ioc_df = preper_ioc_df(ioc_df)
 
     exfil_summary = (
-        batch_df.withWatermark("ts", "3 minutes")
-        .groupBy(F.window(F.col("ts"), "2 minute"), F.col("id_orig_h"), F.col("id_resp_h"))
+        batch_df.withWatermark("ts", "30 seconds")
+        .groupBy(F.window(F.col("ts"), "1 minute"), F.col("id_orig_h"), F.col("id_resp_h"))
         .agg(
             F.sum(F.col("orig_bytes")).alias("total_orig_bytes"),
             F.first("uid").alias("log_uid"),
@@ -99,41 +98,15 @@ def data_exfiltration_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataF
     )
 
     alerts_df = exfil_summary.filter(F.col("total_orig_bytes") > DATA_EXFIl_THRESHOLD)
-
-    match_condition = (
-        (F.col("id_resp_h") == F.col("ioc_for_match"))
-        | (F.array_contains(F.col("queries"), F.col("ioc_for_match")))
-        | (F.array_contains(F.col("hosts"), F.col("ioc_for_match")))
-    )
-
-    alerts_df = alerts_df.join(
-        normalized_ioc_df.alias("iocs"),
-        on=match_condition,
-        how="left"
-    )
-
-    alerts_df = (
-        alerts_df.groupBy(
-            F.col("window"),
-            F.col("id_orig_h"),
-            F.col("id_resp_h"),
-            F.col("log_uid"),
-            F.col("event_ts"),
-            F.col("total_orig_bytes")
-        )
-        .agg(
-            F.max("confidence_level").alias("ioc_score"),
-            F.collect_set(F.col("iocs.ioc")).alias("ioc_value"),
-            F.collect_set("reporter").alias("ioc_source"),
-            F.max(F.when(F.col("is_compromised"), 1).otherwise(0)).cast(T.BooleanType()).alias("is_compromised")
-        )
-    )
-
+    
+    alerts_df = alerts_df.withColumn("ioc_score", F.lit(None).cast(T.IntegerType()))
+    alerts_df = alerts_df.withColumn("ioc_source", F.array_repeat(F.lit(None).cast(T.StringType()), 0))
+    alerts_df = alerts_df.withColumn("ioc_value", F.array_repeat(F.lit(None).cast(T.StringType()), 0))
     alerts_df = alerts_df.withColumn("alert_type", F.lit("Data Exfiltration"))
     alerts_df = alerts_df.withColumn(
         "severity",
         F.when(
-            (F.col("total_orig_bytes") > DATA_EXFIl_THRESHOLD * 2) | F.col("is_compromised"),
+            (F.col("total_orig_bytes") > DATA_EXFIl_THRESHOLD * 2),
             F.lit("High")
         ).otherwise(F.lit("Medium"))
     )
@@ -150,7 +123,10 @@ def data_exfiltration_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataF
             256
         )
     )
-    alerts_df = alerts_df.withColumn("tags", F.array(F.lit("data_exfiltration")))
+    alerts_df = alerts_df.withColumn("data_exfiltration_mb", F.col("total_orig_bytes") / 1000000)
+    alerts_df = alerts_df.withColumn("tags", F.array(
+        F.lit("data_exfiltration"),
+        F.concat_ws(":", F.lit("data_exfiltration_mb"), F.col("data_exfiltration_mb"))))
 
     return alerts_df.select(
         "alert_id",
@@ -183,7 +159,7 @@ def ioc_match_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
     normalized_ioc_df = preper_ioc_df(ioc_df)
 
     event_df = (
-        batch_df.withWatermark("ts", "1 minutes")
+        batch_df.withWatermark("ts", "30 seconds")
         .withColumn("answer", F.explode_outer(F.col("answers")))
         .select(
             F.col("uid"),
@@ -311,10 +287,10 @@ if __name__ == "__main__":
     
     # ioc_match_alert_df = ioc_match_detection(parsed_df, ioc_df)
     port_scan_alert_df = port_scan_detection(parsed_df)
-    # data_exfiltration_alert_df = data_exfiltration_detection(parsed_df, ioc_df)
+    data_exfiltration_alert_df = data_exfiltration_detection(parsed_df)
     
     # alerts_df = ioc_match_alert_df.unionByName(port_scan_alert_df).unionByName(data_exfiltration_alert_df)
-    alerts_df = port_scan_alert_df
+    alerts_df = port_scan_alert_df.unionByName(data_exfiltration_alert_df)
 
     # scan_counts = (
     #     parsed_df.withWatermark("ts", "1 minute")
@@ -359,8 +335,3 @@ if __name__ == "__main__":
         
         # logger.info("3 hours passed. Stopping query to refresh IOC database...")
         # query.stop()
-    # docker exec -it spark spark-submit /opt/bitnami/spark/apps/alert_engine.py
-
-
-    # סיכוי טוב מאוד שהזמן שמגיע מהסנסור לא מתפרסר נכון וגודל קצת
-    # TODO: debu the code => https://gemini.google.com/app/c600e0d60fe930c5?utm_source=app_launcher&utm_medium=owned&utm_campaign=base_all
