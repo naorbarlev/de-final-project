@@ -201,3 +201,111 @@
 2026-07-01 21:05:38.615 | |4f08d7ec6a7d8f9195dd8d8c291db5ddff91d2b86d1b73b1a784e07d8377ac5b|Cf1914bb3b14f40e1a|Data Exfiltration|High    |2026-07-01 18:03:48.491|2026-07-01 17:59:09.794561|10.20.20.147  |84.38.129.31|NULL     |[]        |[]       |[data_exfiltration, total_orig_bytes:307940784]|
 2026-07-01 21:05:38.615 | +----------------------------------------------------------------+------------------+-----------------+--------+-----------------------+--------------------------+--------------+------------+---------+----------+---------+-----------------------------------------------+
 2026-07-01 21:05:38.615 | 
+
+
+
+
+2026-07-02 10:39:58.176 | spark 07:39:58.16 INFO  ==> 
+2026-07-02 10:39:58.204 | spark 07:39:58.19 INFO  ==> Welcome to the Bitnami spark container
+2026-07-02 10:39:58.225 | spark 07:39:58.22 INFO  ==> Subscribe to project updates by watching https://github.com/bitnami/containers
+2026-07-02 10:39:58.238 | spark 07:39:58.23 INFO  ==> Submit issues and feature requests at https://github.com/bitnami/containers/issues
+2026-07-02 10:39:58.252 | spark 07:39:58.24 INFO  ==> Upgrade to Tanzu Application Catalog for production environments to access custom-configured and pre-packaged software components. Gain enhanced features, including Software Bill of Materials (SBOM), CVE scan result reports, and VEX documents. To learn more, visit https://bitnami.com/enterprise
+2026-07-02 10:39:58.266 | spark 07:39:58.26 INFO  ==> 
+2026-07-02 10:39:58.333 | 
+2026-07-02 10:40:11.138 | 26/07/02 07:40:11 INFO SparkContext: Running Spark version 3.5.1
+2026-07-02 10:40:11.147 | 26/07/02 07:40:11 INFO SparkContext: OS info Linux, 6.10.14-linuxkit, amd64
+2026-07-02 10:40:11.149 | 26/07/02 07:40:11 INFO SparkContext: Java version 17.0.12
+2026-07-02 10:40:11.276 | 26/07/02 07:40:11 INFO ResourceUtils: ==============================================================
+2026-07-02 10:40:11.277 | 26/07/02 07:40:11 INFO ResourceUtils: No custom resources configured for spark.driver.
+2026-07-02 10:40:11.278 | 26/07/02 07:40:11 INFO ResourceUtils: ==============================================================
+2026-07-02 10:40:11.280 | 26/07/02 07:40:11 INFO SparkContext: Submitted application: KafkaToKafkaStreaming
+2026-07-02 10:40:11.390 | 26/07/02 07:40:11 INFO ResourceProfile: Default ResourceProfile created, executor resources: Map(cores -> name: cores, amount: 1, script: , vendor: , memory -> name: memory, amount: 1024, script: , vendor: , offHeap -> name: offHeap, amount: 0, script: , vendor: ), task resources: Map(cpus -> name: cpus, amount: 1.0)
+2026-07-02 10:40:11.419 | 26/07/02 07:40:11 INFO ResourceProfile: Limiting resource is cpu
+2026-07-02 10:40:11.422 | 26/07/02 07:40:11 INFO ResourceProfileManager: Added ResourceProfile id: 0
+2026-07-02 10:40:11.640 | 26/07/02 07:40:11 INFO SecurityManager: Changing view acls to: spark
+2026-07-02 10:40:11.643 | 26/07/02 07:40:11 INFO SecurityManager: Changing modify acls to: spark
+2026-07-02 10:40:11.644 | 26/07/02 07:40:11 INFO SecurityManager: Changing view acls groups to: 
+2026-07-02 10:40:11.646 | 26/07/02 07:40:11 INFO SecurityManager: Changing modify acls groups to: 
+2026-07-02 10:40:11.649 | 26/07/02 07:40:11 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users with view permissions: spark; groups with view permissions: EMPTY; users with modify permissions: spark; groups with modify permissions: EMPTY
+2026-07-02 10:40:11.951 | 26/07/02 07:40:11 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+2026-07-02 10:40:13.197 | 26/07/02 07:40:13 INFO Utils: Successfully started service 'sparkDriver' on port 32969.
+2026-07-02 10:40:13.340 | 26/07/02 07:40:13 INFO SparkEnv: Registering MapOutputTracker
+2026-07-02 10:40:13.533 | 26/07/02 07:40:13 INFO SparkEnv: Registering BlockManagerMaster
+2026-07-02 10:40:13.649 | 26/07/02 07:40:13 INFO BlockManagerMasterEndpoint: Using org.apache.spark.storage.DefaultTopologyMapper for getting topology information
+2026-07-02 10:40:13.655 | 26/07/02 07:40:13 INFO BlockManagerMasterEndpoint: BlockManagerMasterEndpoint up
+2026-07-02 10:40:13.692 | 26/07/02 07:40:13 INFO SparkEnv: Registering BlockManagerMasterHeartbeat
+2026-07-02 10:40:13.873 | 26/07/02 07:40:13 INFO DiskBlockManager: Created local directory at /tmp/blockmgr-a64e6777-5ae1-4fae-905d-307f97957bdb
+2026-07-02 10:40:13.942 | 26/07/02 07:40:13 INFO MemoryStore: MemoryStore started with capacity 434.4 MiB
+2026-07-02 10:40:14.045 | 26/07/02 07:40:14 INFO SparkEnv: Registering OutputCommitCoordinator
+2026-07-02 10:40:14.498 | 26/07/02 07:40:14 INFO JettyUtils: Start Jetty 0.0.0.0:4040 for SparkUI
+2026-07-02 10:40:14.753 | 26/07/02 07:40:14 INFO Utils: Successfully started service 'SparkUI' on port 4040.
+2026-07-02 10:40:15.312 | 26/07/02 07:40:15 INFO Executor: Starting executor ID driver on host 29b6369f99b1
+2026-07-02 10:40:15.317 | 26/07/02 07:40:15 INFO Executor: OS info Linux, 6.10.14-linuxkit, amd64
+2026-07-02 10:40:15.317 | 26/07/02 07:40:15 INFO Executor: Java version 17.0.12
+2026-07-02 10:40:15.359 | 26/07/02 07:40:15 INFO Executor: Starting executor with user classpath (userClassPathFirst = false): ''
+2026-07-02 10:40:15.367 | 26/07/02 07:40:15 INFO Executor: Created or updated repl class loader org.apache.spark.util.MutableURLClassLoader@1674c884 for default.
+2026-07-02 10:40:15.464 | 26/07/02 07:40:15 INFO Utils: Successfully started service 'org.apache.spark.network.netty.NettyBlockTransferService' on port 42767.
+2026-07-02 10:40:15.464 | 26/07/02 07:40:15 INFO NettyBlockTransferService: Server created on 29b6369f99b1:42767
+2026-07-02 10:40:15.473 | 26/07/02 07:40:15 INFO BlockManager: Using org.apache.spark.storage.RandomBlockReplicationPolicy for block replication policy
+2026-07-02 10:40:15.495 | 26/07/02 07:40:15 INFO BlockManagerMaster: Registering BlockManager BlockManagerId(driver, 29b6369f99b1, 42767, None)
+2026-07-02 10:40:15.507 | 26/07/02 07:40:15 INFO BlockManagerMasterEndpoint: Registering block manager 29b6369f99b1:42767 with 434.4 MiB RAM, BlockManagerId(driver, 29b6369f99b1, 42767, None)
+2026-07-02 10:40:15.518 | 26/07/02 07:40:15 INFO BlockManagerMaster: Registered BlockManager BlockManagerId(driver, 29b6369f99b1, 42767, None)
+2026-07-02 10:40:15.524 | 26/07/02 07:40:15 INFO BlockManager: Initialized BlockManager: BlockManagerId(driver, 29b6369f99b1, 42767, None)
+2026-07-02 10:40:17.157 | 2026-07-02 07:40:17 - INFO - [__main__:257] - Loading IOC database from MinIO
+2026-07-02 10:40:40.866 | 2026-07-02 07:40:40 - INFO - [__main__:278] - Parsed network stream into a DataFrame
+2026-07-02 10:40:41.040 | 2026-07-02 07:40:41 - INFO - [__main__:158] - Starting IOC match detection
+2026-07-02 10:40:45.440 | 2026-07-02 07:40:45 - INFO - [__main__:35] - Starting port scan detection
+2026-07-02 10:40:46.914 | 2026-07-02 07:40:46 - INFO - [__main__:86] - Starting data exfiltration detection
+2026-07-02 10:40:50.176 | 2026-07-02 07:40:50 - INFO - [__main__:311] - Spark streaming query started. Will reload IOCs in 3 hours.
+2026-07-02 10:44:06.868 | -------------------------------------------
+2026-07-02 10:44:06.869 | Batch: 0
+2026-07-02 10:44:06.869 | -------------------------------------------
+2026-07-02 10:44:07.264 | +-----+
+2026-07-02 10:44:07.264 | |value|
+2026-07-02 10:44:07.264 | +-----+
+2026-07-02 10:44:07.264 | +-----+
+2026-07-02 10:44:07.264 | 
+2026-07-02 10:47:44.346 | -------------------------------------------
+2026-07-02 10:47:44.348 | Batch: 1
+2026-07-02 10:47:44.348 | -------------------------------------------
+2026-07-02 10:47:44.656 | +-----+
+2026-07-02 10:47:44.656 | |value|
+2026-07-02 10:47:44.656 | +-----+
+2026-07-02 10:47:44.656 | +-----+
+2026-07-02 10:47:44.656 | 
+2026-07-02 10:51:29.540 | -------------------------------------------
+2026-07-02 10:51:29.542 | Batch: 2
+2026-07-02 10:51:29.542 | -------------------------------------------
+2026-07-02 10:51:35.045 | +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+2026-07-02 10:51:35.045 | |value                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+2026-07-02 10:51:35.045 | +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+2026-07-02 10:51:35.045 | |{"alert_id":"bdcc53a11e089a211be6c45f677ab16aaf20d1598838d4b650c80c1a1472d3f3","log_uid":"Cf1ba76b599a7435ea","alert_type":"IOC Match","severity":"High","alert_ts":"2026-07-02T07:47:46.218Z","event_ts":"2026-07-02T07:41:12.844Z","orig_ip":"10.20.20.252","resp_ip":"186.37.71.206","ioc_score":100,"ioc_source":[],"ioc_value":["49.233.9.4:443"],"tags":["CobaltStrike"]}                                                                           |
+2026-07-02 10:51:35.045 | |{"alert_id":"90c566b473c5f610599d64010585906f1acdd457e33d50b8841b3ec4e4e8c8bd","log_uid":"C76edf268dd6945bc9","alert_type":"IOC Match","severity":"High","alert_ts":"2026-07-02T07:47:46.218Z","event_ts":"2026-07-02T07:41:22.291Z","orig_ip":"10.30.30.108","resp_ip":"38.132.122.141","ioc_score":100,"ioc_source":["varysz"],"ioc_value":["thesoccerarena.com","38.132.122.141:443"],"tags":["Adaptix","ClickFix","etherhiding","injected","Polygon"]}|
+2026-07-02 10:51:35.045 | |{"alert_id":"7479121e6b57437fd4e5bbe883541492ce5687fda4aee7a4c60f75d39bda2b05","log_uid":"C38608cd380314240b","alert_type":"IOC Match","severity":"High","alert_ts":"2026-07-02T07:47:46.218Z","event_ts":"2026-07-02T07:42:15.590Z","orig_ip":"10.10.10.7","resp_ip":"38.132.122.141","ioc_score":100,"ioc_source":[],"ioc_value":["38.132.122.141:443"],"tags":["Adaptix"]}                                                                             |
+2026-07-02 10:51:35.045 | |{"alert_id":"bb492351f3682da2d42f3a246c5e42472100ef8ca7c10f09016ab54b9b7abcb3","log_uid":"Caa0cad7728914dc8b","alert_type":"IOC Match","severity":"High","alert_ts":"2026-07-02T07:47:46.218Z","event_ts":"2026-07-02T07:43:11.214Z","orig_ip":"10.10.10.60","resp_ip":"49.233.9.4","ioc_score":100,"ioc_source":[],"ioc_value":["49.233.9.4:443"],"tags":["CobaltStrike"]}                                                                               |
+2026-07-02 10:51:35.045 | |{"alert_id":"ee740249b776661f193e3ddd4cde8e8d642f9409fc2703f4d56541e04d8522dc","alert_type":"Port Scanning","severity":"High","alert_ts":"2026-07-02T07:47:46.218Z","event_ts":"2026-07-02T07:41:44.303Z","orig_ip":"210.159.181.132","resp_ip":"10.20.20.148","ioc_source":[],"ioc_value":[],"tags":["port_scan","ports_count:13"]}                                                                                                                      |
+2026-07-02 10:51:35.045 | |{"alert_id":"e1733fc057c02b089304560d688d76f27d97e3ebbdc9990f5de8faf48ad2ce7e","alert_type":"Port Scanning","severity":"Medium","alert_ts":"2026-07-02T07:47:46.218Z","event_ts":"2026-07-02T07:42:21.781Z","orig_ip":"164.3.214.75","resp_ip":"10.30.30.121","ioc_source":[],"ioc_value":[],"tags":["port_scan","ports_count:9"]}                                                                                                                        |
+2026-07-02 10:51:35.045 | |{"alert_id":"d14ceffa461a72a5170094822bde63522cf399ac36c43ee11cd635264917dbb4","alert_type":"Port Scanning","severity":"Medium","alert_ts":"2026-07-02T07:47:46.218Z","event_ts":"2026-07-02T07:42:04.236Z","orig_ip":"209.25.166.25","resp_ip":"10.20.20.184","ioc_source":[],"ioc_value":[],"tags":["port_scan","ports_count:8"]}                                                                                                                       |
+2026-07-02 10:51:35.045 | |{"alert_id":"80de9e4d270037991f433fe5e053ab0f20f5bcbb8808ae70a47b2a6d97ec84ae","alert_type":"Port Scanning","severity":"Medium","alert_ts":"2026-07-02T07:47:46.218Z","event_ts":"2026-07-02T07:42:42.914Z","orig_ip":"94.25.100.58","resp_ip":"10.30.30.252","ioc_source":[],"ioc_value":[],"tags":["port_scan","ports_count:10"]}                                                                                                                       |
+2026-07-02 10:51:35.045 | |{"alert_id":"079619d0273df72efdfbe1f68e3d9ab14613792956e8f6b9e8696a411cdd532b","alert_type":"Port Scanning","severity":"Medium","alert_ts":"2026-07-02T07:47:46.218Z","event_ts":"2026-07-02T07:41:54.110Z","orig_ip":"192.113.22.180","resp_ip":"10.20.20.120","ioc_source":[],"ioc_value":[],"tags":["port_scan","ports_count:11"]}                                                                                                                     |
+2026-07-02 10:51:35.045 | |{"alert_id":"4ffb51794e7265df11da6764a67b6d43c818ead8a5806a5f94b442b7288ae5b1","log_uid":"Cf1ba76b599a7435ea","alert_type":"Data Exfiltration","severity":"High","alert_ts":"2026-07-02T07:47:46.218Z","event_ts":"2026-07-02T07:41:12.844Z","orig_ip":"10.20.20.252","resp_ip":"49.233.9.4","ioc_source":[],"ioc_value":[],"tags":["data_exfiltration","data_exfiltration_mb:310.851479"]}                                                               |
+2026-07-02 10:51:35.045 | |{"alert_id":"850eff3d791ac3f330437d18fd5dc9465eeb7468dd35e34cc4767550c94dd048","log_uid":"C38608cd380314240b","alert_type":"Data Exfiltration","severity":"High","alert_ts":"2026-07-02T07:47:46.218Z","event_ts":"2026-07-02T07:42:13.590Z","orig_ip":"10.10.10.7","resp_ip":"38.132.122.141","ioc_source":[],"ioc_value":[],"tags":["data_exfiltration","data_exfiltration_mb:229.200802"]}                                                             |
+2026-07-02 10:51:35.045 | +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+2026-07-02 10:51:35.045 | 
+
+
+
+###### ALERTS FROM KAFKA TOPIC
+
+{"alert_id":"51719a98b7483a81a256860647b4d0a9883b4b6c1482655b18f575000dc99cd5","log_uid":"C8937f4eb096c40578","alert_type":"IOC Match","severity":"High","alert_ts":"2026-07-02T08:26:39.297Z","event_ts":"2026-07-02T08:01:50.199Z","orig_ip":"10.30.30.147","resp_ip":"38.132.122.141","ioc_score":100,"ioc_source":[],"ioc_value":["38.132.122.141:443"],"tags":["Adaptix"]}
+{"alert_id":"1de2eb9e9b92d100088376aee59d619a1c5bf0232dd6a73404a77b38f742eb7e","log_uid":"C34e2aff0169e4651b","alert_type":"IOC Match","severity":"High","alert_ts":"2026-07-02T08:26:39.297Z","event_ts":"2026-07-02T08:02:40.997Z","orig_ip":"10.10.10.166","resp_ip":"49.233.9.4","ioc_score":100,"ioc_source":[],"ioc_value":["49.233.9.4:443"],"tags":["CobaltStrike"]}
+{"alert_id":"11d5865ff3e61ba6adc23c2652dd16c811f94644047cd87b6caa6cee51d3d91d","log_uid":"C46178182b43f453cb","alert_type":"IOC Match","severity":"High","alert_ts":"2026-07-02T08:26:39.297Z","event_ts":"2026-07-02T08:01:16.165Z","orig_ip":"10.30.30.63","resp_ip":"49.233.9.4","ioc_score":100,"ioc_source":[],"ioc_value":["49.233.9.4:443"],"tags":["CobaltStrike"]}
+{"alert_id":"65f0b4a60b65f08f19f8707cd80c8c865f09b0cee620752392a0aa6e64dcf021","log_uid":"Cabab58b8fdec4eff8","alert_type":"IOC Match","severity":"High","alert_ts":"2026-07-02T08:26:39.297Z","event_ts":"2026-07-02T08:01:59.936Z","orig_ip":"10.10.10.63","resp_ip":"84.38.129.31","ioc_score":100,"ioc_source":["CarsonWilliams","varysz","abuse_ch"],"ioc_value":["84.38.129.31:9095","https://puntoscardinalestv.com/","84.38.129.31:8085","puntoscardinalestv.com"],"tags":["remcos","RAT","RemcosRAT","ClickFix","etherhiding","injected","Polygon"]}
+{"alert_id":"f18e38b77ad97a1682a169dd65f17c8a1071d1637c5dc29b1076eef8a5dd6990","log_uid":"Cc68e027d589e4d658","alert_type":"IOC Match","severity":"High","alert_ts":"2026-07-02T08:26:39.297Z","event_ts":"2026-07-02T08:02:11.153Z","orig_ip":"10.20.20.84","resp_ip":"49.233.9.4","ioc_score":100,"ioc_source":["varysz"],"ioc_value":["thesoccerarena.com","49.233.9.4:443"],"tags":["CobaltStrike","ClickFix","etherhiding","injected","Polygon"]}
+{"alert_id":"154691b86fa93e00a9610df232dc7a9b070b5450611b00e567382b425d8599e8","log_uid":"Ca48af2cc6b8445319","alert_type":"IOC Match","severity":"High","alert_ts":"2026-07-02T08:26:39.297Z","event_ts":"2026-07-02T08:01:06.165Z","orig_ip":"10.20.20.169","resp_ip":"146.70.87.64","ioc_score":100,"ioc_source":["varysz"],"ioc_value":["146.70.87.64:443","thesoccerarena.com"],"tags":["Adaptix","ClickFix","etherhiding","injected","Polygon"]}
+{"alert_id":"4f8a86f5fbac8c3cbe6b450b2ab654a58b889060fe8653e2a0cb9640f7dc315d","log_uid":"C8ce6cb37d1014a729","alert_type":"IOC Match","severity":"High","alert_ts":"2026-07-02T08:26:39.297Z","event_ts":"2026-07-02T08:03:00.260Z","orig_ip":"10.30.30.169","resp_ip":"49.233.9.4","ioc_score":100,"ioc_source":[],"ioc_value":["49.233.9.4:443"],"tags":["CobaltStrike"]}
+{"alert_id":"cc5cce558b601cf541ae4d51eb08915a46e4eeabbe16d4eba5d97777ad7ee248","log_uid":"Ccdbe09c913b641f29","alert_type":"IOC Match","severity":"High","alert_ts":"2026-07-02T08:26:39.297Z","event_ts":"2026-07-02T08:02:29.280Z","orig_ip":"10.20.20.108","resp_ip":"146.70.87.64","ioc_score":100,"ioc_source":[],"ioc_value":["146.70.87.64:443"],"tags":["Adaptix"]}
+{"alert_id":"cc5cce558b601cf541ae4d51eb08915a46e4eeabbe16d4eba5d97777ad7ee248","log_uid":"Ccdbe09c913b641f29","alert_type":"IOC Match","severity":"High","alert_ts":"2026-07-02T08:26:39.297Z","event_ts":"2026-07-02T08:02:31.280Z","orig_ip":"10.20.20.108","resp_ip":"146.70.87.64","ioc_score":100,"ioc_source":[],"ioc_value":["146.70.87.64:443"],"tags":["Adaptix"]}
+{"alert_id":"4f8a86f5fbac8c3cbe6b450b2ab654a58b889060fe8653e2a0cb9640f7dc315d","log_uid":"C8ce6cb37d1014a729","alert_type":"IOC Match","severity":"High","alert_ts":"2026-07-02T08:26:39.297Z","event_ts":"2026-07-02T08:02:58.260Z","orig_ip":"10.30.30.169","resp_ip":"49.233.9.4","ioc_score":100,"ioc_source":[],"ioc_value":["49.233.9.4:443"],"tags":["CobaltStrike"]}
+{"alert_id":"a4403ea36fa3c7a2ff61409fda9d5882bb2c83fd3e82571c51f2a6351aac3cdd","log_uid":"Cb6f6724f87044dd0a","alert_type":"IOC Match","severity":"High","alert_ts":"2026-07-02T08:26:39.297Z","event_ts":"2026-07-02T08:00:43.837Z","orig_ip":"10.10.10.33","resp_ip":"38.132.122.141","ioc_score":100,"ioc_source":[],"ioc_value":["38.132.122.141:443"],"tags":["Adaptix"]}
+{"alert_id":"4024169a918c00f83e08d9a4d3752e9326788886c68b3aaac45afed8b9759d45","log_uid":"C5a2658d39ff34a0da","alert_type":"IOC Match","severity":"High","alert_ts":"2026-07-02T08:26:39.297Z","event_ts":"2026-07-02T08:02:32.192Z","orig_ip":"10.20.20.205","resp_ip":"146.70.87.64","ioc_score":100,"ioc_source":["CarsonWilliams","varysz"],"ioc_value":["146.70.87.64:443","https://puntoscardinalestv.com/","puntoscardinalestv.com"],"tags":["Adaptix","ClickFix","etherhiding","injected","Polygon"]}

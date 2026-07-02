@@ -188,7 +188,7 @@ def ioc_match_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
 
 
     aggregated_df = matched_df.groupBy(
-        F.window(F.col("ts"), "1 minute"),
+        F.window(F.col("ts"), "30 seconds"),
         F.col("uid")
     ).agg(
         F.first("resp_ip").alias("resp_ip"),
@@ -253,85 +253,63 @@ if __name__ == "__main__":
     hadoop_conf.set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
     
 
-    # while True:
-    logger.info("Loading IOC database from MinIO")
-    ioc_df = load_ioc_db(spark=spark)
-    
-    # Read stream from Kafka
-    df = spark.readStream \
-        .format("kafka") \
-        .option("kafka.bootstrap.servers", KAFKA_BROKER) \
-        .option("subscribe", NETWORK_LOGS_TOPIC) \
-        .option("startingOffsets", "latest") \
-        .option("failOnDataLoss", "false") \
-        .load()
-
-    parsed_df = df \
-        .selectExpr("CAST(value AS STRING) as json_str") \
-        .select(F.from_json(
-            F.col("json_str"), 
-            WIDE_SCHEMA,
-            options={"timestampFormat": "yyyy-MM-dd'T'HH:mm:ss.SSSSSSX"}
-        ).alias("data")) \
-        .select("data.*")
-
-    logger.info("Parsed network stream into a DataFrame")
-    
-    parsed_df = parsed_df.withColumnsRenamed({
-        "id.orig_h": "id_orig_h",
-        "id.orig_p": "id_orig_p",
-        "id.resp_h": "id_resp_h",
-        "id.resp_p": "id_resp_p"
-    })
-    
-    
-    # ioc_match_alert_df = ioc_match_detection(parsed_df, ioc_df)
-    port_scan_alert_df = port_scan_detection(parsed_df)
-    data_exfiltration_alert_df = data_exfiltration_detection(parsed_df)
-    
-    # alerts_df = ioc_match_alert_df.unionByName(port_scan_alert_df).unionByName(data_exfiltration_alert_df)
-    alerts_df = port_scan_alert_df.unionByName(data_exfiltration_alert_df)
-
-    # scan_counts = (
-    #     parsed_df.withWatermark("ts", "1 minute")
-    #     .groupBy(
-    #         F.window("ts", "1 minute"),
-    #         "uid"
-    #     ).agg(
-    #         F.count("*").alias("rows"),
-    #         F.approx_count_distinct("id_resp_p").alias("ports")
-    #     )
-    # ).withColumn("event_ts", F.lit(datetime.now()))
-
-    # query = scan_counts.writeStream \
-    #     .format("console") \
-    #     .option("truncate", False) \
-    #     .start()    
-    
-    # kafka_output_df = alerts_df.select(
-    #     F.to_json(F.struct("*")).alias("value")
-    # )
-    
-
-    # Write stream to Kafka
-    # query = kafka_output_df.writeStream \
-    #     .format("kafka") \
-    #     .option("kafka.bootstrap.servers", KAFKA_BROKER) \
-    #     .option("topic", ALERTS_TOPIC) \
-    #     .option("checkpointLocation", f"s3a://{BUCKET_NAME}/checkpoints/kafka_logs_test") \
-    #     .start()
-
-    query = alerts_df.writeStream \
-        .format("console") \
-        .outputMode("append") \
-        .option("truncate", "false") \
-        .start()
-
-
-
-    # logger.info("Spark streaming query started. Will reload IOCs in 3 hours.")
-    query.awaitTermination()
-        # query.awaitTermination(timeout=3 * 60 * 60)
+    while True:
+        logger.info("Loading IOC database from MinIO")
+        ioc_df = load_ioc_db(spark=spark)
         
-        # logger.info("3 hours passed. Stopping query to refresh IOC database...")
-        # query.stop()
+        # Read stream from Kafka
+        df = spark.readStream \
+            .format("kafka") \
+            .option("kafka.bootstrap.servers", KAFKA_BROKER) \
+            .option("subscribe", NETWORK_LOGS_TOPIC) \
+            .option("startingOffsets", "latest") \
+            .option("failOnDataLoss", "false") \
+            .load()
+
+        parsed_df = df \
+            .selectExpr("CAST(value AS STRING) as json_str") \
+            .select(F.from_json(
+                F.col("json_str"), 
+                WIDE_SCHEMA,
+                options={"timestampFormat": "yyyy-MM-dd'T'HH:mm:ss.SSSSSSX"}
+            ).alias("data")) \
+            .select("data.*")
+
+        logger.info("Parsed network stream into a DataFrame")
+    
+        parsed_df = parsed_df.withColumnsRenamed({
+            "id.orig_h": "id_orig_h",
+            "id.orig_p": "id_orig_p",
+            "id.resp_h": "id_resp_h",
+            "id.resp_p": "id_resp_p"
+        })
+    
+        ioc_match_alert_df = ioc_match_detection(parsed_df, ioc_df)
+        port_scan_alert_df = port_scan_detection(parsed_df)
+        data_exfiltration_alert_df = data_exfiltration_detection(parsed_df)
+        
+        alerts_df = ioc_match_alert_df.unionByName(port_scan_alert_df).unionByName(data_exfiltration_alert_df)
+    
+        kafka_output_df = alerts_df.select(
+            F.to_json(F.struct("*")).alias("value")
+        )
+    
+        # Write stream to Kafka
+        query = kafka_output_df.writeStream \
+            .format("kafka") \
+            .option("kafka.bootstrap.servers", KAFKA_BROKER) \
+            .option("topic", ALERTS_TOPIC) \
+            .option("checkpointLocation", f"s3a://{BUCKET_NAME}/checkpoints/kafka_logs") \
+            .start()
+
+        # query = kafka_output_df.writeStream \
+        #     .format("console") \
+        #     .outputMode("append") \
+        #     .option("truncate", "false") \
+        #     .start()
+
+        logger.info("Spark streaming query started. Will reload IOCs in 3 hours.")
+        query.awaitTermination(timeout=3 * 60 * 60)
+        
+        logger.info("3 hours passed. Stopping query to refresh IOC database...")
+        query.stop()

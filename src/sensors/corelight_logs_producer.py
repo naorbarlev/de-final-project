@@ -551,7 +551,7 @@ def parse_args():
     parser.add_argument(
         "--attack-probability",
         type=float,
-        default=0.3,
+        default=0.1,
         help="Chance to emit one fake malicious scenario on each loop.",
     )
     parser.add_argument(
@@ -568,7 +568,7 @@ def send_random_attack_scenario(segments):
     segment = random.choice(segments)
     scenario = random.choice(
         [
-            # segment.send_reach_malicious_ip_demo,
+            segment.send_reach_malicious_ip_demo,
             segment.send_port_scan_demo,
             segment.send_data_exfiltration_demo,
         ]
@@ -615,12 +615,11 @@ def main():
             for _ in range(random.randint(1, 100)):
                 for segment in segments:
                     segment.send_sample_batch()
-            if (
-                attack_events_sent < args.max_attack_events
-                and random.random() < args.attack_probability
-            ):
+                    
+            if (attack_events_sent < args.max_attack_events and random.random() < args.attack_probability):
                 send_random_attack_scenario(segments)
                 attack_events_sent += 1
+            
             producer.flush()
             time.sleep(get_random_log_interval())
     finally:
