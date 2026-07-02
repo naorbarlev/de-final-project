@@ -551,7 +551,7 @@ def parse_args():
     parser.add_argument(
         "--attack-probability",
         type=float,
-        default=0.1,
+        default=5,
         help="Chance to emit one fake malicious scenario on each loop.",
     )
     parser.add_argument(
@@ -612,11 +612,10 @@ def main():
         logger.info("Attack events should appear in Elasticsearch now!")
         while True:
             
-            for _ in range(random.randint(1, 100)):
-                for segment in segments:
-                    segment.send_sample_batch()
+            for segment in segments:
+                segment.send_sample_batch()
                     
-            if (attack_events_sent < args.max_attack_events and random.random() < args.attack_probability):
+            if attack_events_sent < args.max_attack_events and random.randint(1, 100) <= args.attack_probability:
                 send_random_attack_scenario(segments)
                 attack_events_sent += 1
             

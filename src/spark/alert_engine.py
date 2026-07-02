@@ -2,6 +2,7 @@
 from pathlib import Path
 import sys
 from datetime import datetime, timedelta
+import uuid
 from pyspark.sql import DataFrame, SparkSession
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
@@ -35,7 +36,7 @@ def port_scan_detection(batch_df: DataFrame) -> DataFrame:
     logger.info("Starting port scan detection")
 
     alerts_df = (
-        batch_df.withWatermark("ts", "30 seconds")
+        batch_df
         .groupBy(F.window(F.col("ts"), "1 minutes"), F.col("id_orig_h"), F.col("id_resp_h"))
         .agg(
             F.approx_count_distinct(F.col("id_resp_p")).alias("port_count"),
@@ -86,7 +87,7 @@ def data_exfiltration_detection(batch_df: DataFrame) -> DataFrame:
     logger.info("Starting data exfiltration detection")
 
     exfil_summary = (
-        batch_df.withWatermark("ts", "30 seconds")
+        batch_df
         .groupBy(F.window(F.col("ts"), "1 minute"), F.col("id_orig_h"), F.col("id_resp_h"))
         .agg(
             F.sum(F.col("orig_bytes")).alias("total_orig_bytes"),
@@ -159,7 +160,7 @@ def ioc_match_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
     normalized_ioc_df = preper_ioc_df(ioc_df)
 
     event_df = (
-        batch_df.withWatermark("ts", "30 seconds")
+        batch_df
         .withColumn("answer", F.explode_outer(F.col("answers")))
         .select(
             F.col("uid"),
@@ -273,17 +274,19 @@ if __name__ == "__main__":
                 WIDE_SCHEMA,
                 options={"timestampFormat": "yyyy-MM-dd'T'HH:mm:ss.SSSSSSX"}
             ).alias("data")) \
-            .select("data.*")
-
-        logger.info("Parsed network stream into a DataFrame")
-    
-        parsed_df = parsed_df.withColumnsRenamed({
+            .select("data.*").withColumnsRenamed({
             "id.orig_h": "id_orig_h",
             "id.orig_p": "id_orig_p",
             "id.resp_h": "id_resp_h",
             "id.resp_p": "id_resp_p"
         })
     
+        
+        parsed_df = parsed_df.withWatermark("ts", "30 seconds")
+
+        logger.info("Parsed network stream into a DataFrame")
+    
+
         ioc_match_alert_df = ioc_match_detection(parsed_df, ioc_df)
         port_scan_alert_df = port_scan_detection(parsed_df)
         data_exfiltration_alert_df = data_exfiltration_detection(parsed_df)
@@ -295,19 +298,15 @@ if __name__ == "__main__":
         )
     
         # Write stream to Kafka
+        # REMOVE IN PRODUCTION, USE A FIXED CHECKPOINT PATH
         query = kafka_output_df.writeStream \
             .format("kafka") \
             .option("kafka.bootstrap.servers", KAFKA_BROKER) \
             .option("topic", ALERTS_TOPIC) \
-            .option("checkpointLocation", f"s3a://{BUCKET_NAME}/checkpoints/kafka_logs") \
+            .option("checkpointLocation", f"s3a://{BUCKET_NAME}/checkpoints/kafka_logs_{uuid.uuid4()}") \
             .start()
 
-        # query = kafka_output_df.writeStream \
-        #     .format("console") \
-        #     .outputMode("append") \
-        #     .option("truncate", "false") \
-        #     .start()
-
+        
         logger.info("Spark streaming query started. Will reload IOCs in 3 hours.")
         query.awaitTermination(timeout=3 * 60 * 60)
         

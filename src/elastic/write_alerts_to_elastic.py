@@ -110,3 +110,4 @@ if __name__ == "__main__":
     consumer = KafkaConsumer(ALERTS_TOPIC, bootstrap_servers=KAFKA_BROKER)
     es_index_get_or_create(es_index)
     consume_from_kafka()
+    
