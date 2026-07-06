@@ -1,52 +1,4 @@
-2026-07-01 20:03:17.824 | spark 17:03:17.81 INFO  ==> 
-2026-07-01 20:03:17.840 | spark 17:03:17.83 INFO  ==> Welcome to the Bitnami spark container
-2026-07-01 20:03:17.856 | spark 17:03:17.85 INFO  ==> Subscribe to project updates by watching https://github.com/bitnami/containers
-2026-07-01 20:03:17.874 | spark 17:03:17.86 INFO  ==> Submit issues and feature requests at https://github.com/bitnami/containers/issues
-2026-07-01 20:03:17.889 | spark 17:03:17.88 INFO  ==> Upgrade to Tanzu Application Catalog for production environments to access custom-configured and pre-packaged software components. Gain enhanced features, including Software Bill of Materials (SBOM), CVE scan result reports, and VEX documents. To learn more, visit https://bitnami.com/enterprise
-2026-07-01 20:03:17.904 | spark 17:03:17.90 INFO  ==> 
-2026-07-01 20:03:17.969 | 
-2026-07-01 20:03:29.551 | 26/07/01 17:03:29 INFO SparkContext: Running Spark version 3.5.1
-2026-07-01 20:03:29.560 | 26/07/01 17:03:29 INFO SparkContext: OS info Linux, 6.10.14-linuxkit, amd64
-2026-07-01 20:03:29.561 | 26/07/01 17:03:29 INFO SparkContext: Java version 17.0.12
-2026-07-01 20:03:29.666 | 26/07/01 17:03:29 INFO ResourceUtils: ==============================================================
-2026-07-01 20:03:29.667 | 26/07/01 17:03:29 INFO ResourceUtils: No custom resources configured for spark.driver.
-2026-07-01 20:03:29.667 | 26/07/01 17:03:29 INFO ResourceUtils: ==============================================================
-2026-07-01 20:03:29.669 | 26/07/01 17:03:29 INFO SparkContext: Submitted application: KafkaToKafkaStreaming
-2026-07-01 20:03:29.793 | 26/07/01 17:03:29 INFO ResourceProfile: Default ResourceProfile created, executor resources: Map(cores -> name: cores, amount: 1, script: , vendor: , memory -> name: memory, amount: 1024, script: , vendor: , offHeap -> name: offHeap, amount: 0, script: , vendor: ), task resources: Map(cpus -> name: cpus, amount: 1.0)
-2026-07-01 20:03:29.821 | 26/07/01 17:03:29 INFO ResourceProfile: Limiting resource is cpu
-2026-07-01 20:03:29.823 | 26/07/01 17:03:29 INFO ResourceProfileManager: Added ResourceProfile id: 0
-2026-07-01 20:03:30.007 | 26/07/01 17:03:30 INFO SecurityManager: Changing view acls to: spark
-2026-07-01 20:03:30.010 | 26/07/01 17:03:30 INFO SecurityManager: Changing modify acls to: spark
-2026-07-01 20:03:30.013 | 26/07/01 17:03:30 INFO SecurityManager: Changing view acls groups to: 
-2026-07-01 20:03:30.016 | 26/07/01 17:03:30 INFO SecurityManager: Changing modify acls groups to: 
-2026-07-01 20:03:30.020 | 26/07/01 17:03:30 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users with view permissions: spark; groups with view permissions: EMPTY; users with modify permissions: spark; groups with modify permissions: EMPTY
-2026-07-01 20:03:30.244 | 26/07/01 17:03:30 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
-2026-07-01 20:03:31.299 | 26/07/01 17:03:31 INFO Utils: Successfully started service 'sparkDriver' on port 40223.
-2026-07-01 20:03:31.406 | 26/07/01 17:03:31 INFO SparkEnv: Registering MapOutputTracker
-2026-07-01 20:03:31.535 | 26/07/01 17:03:31 INFO SparkEnv: Registering BlockManagerMaster
-2026-07-01 20:03:31.592 | 26/07/01 17:03:31 INFO BlockManagerMasterEndpoint: Using org.apache.spark.storage.DefaultTopologyMapper for getting topology information
-2026-07-01 20:03:31.594 | 26/07/01 17:03:31 INFO BlockManagerMasterEndpoint: BlockManagerMasterEndpoint up
-2026-07-01 20:03:31.614 | 26/07/01 17:03:31 INFO SparkEnv: Registering BlockManagerMasterHeartbeat
-2026-07-01 20:03:31.680 | 26/07/01 17:03:31 INFO DiskBlockManager: Created local directory at /tmp/blockmgr-a34a2689-6819-4708-a194-e0712a9a3b1f
-2026-07-01 20:03:31.730 | 26/07/01 17:03:31 INFO MemoryStore: MemoryStore started with capacity 434.4 MiB
-2026-07-01 20:03:31.803 | 26/07/01 17:03:31 INFO SparkEnv: Registering OutputCommitCoordinator
-2026-07-01 20:03:32.269 | 26/07/01 17:03:32 INFO JettyUtils: Start Jetty 0.0.0.0:4040 for SparkUI
-2026-07-01 20:03:32.450 | 26/07/01 17:03:32 INFO Utils: Successfully started service 'SparkUI' on port 4040.
-2026-07-01 20:03:32.828 | 26/07/01 17:03:32 INFO Executor: Starting executor ID driver on host a2a6764dfa13
-2026-07-01 20:03:32.829 | 26/07/01 17:03:32 INFO Executor: OS info Linux, 6.10.14-linuxkit, amd64
-2026-07-01 20:03:32.830 | 26/07/01 17:03:32 INFO Executor: Java version 17.0.12
-2026-07-01 20:03:32.862 | 26/07/01 17:03:32 INFO Executor: Starting executor with user classpath (userClassPathFirst = false): ''
-2026-07-01 20:03:32.865 | 26/07/01 17:03:32 INFO Executor: Created or updated repl class loader org.apache.spark.util.MutableURLClassLoader@63f031a for default.
-2026-07-01 20:03:32.939 | 26/07/01 17:03:32 INFO Utils: Successfully started service 'org.apache.spark.network.netty.NettyBlockTransferService' on port 33033.
-2026-07-01 20:03:32.940 | 26/07/01 17:03:32 INFO NettyBlockTransferService: Server created on a2a6764dfa13:33033
-2026-07-01 20:03:32.946 | 26/07/01 17:03:32 INFO BlockManager: Using org.apache.spark.storage.RandomBlockReplicationPolicy for block replication policy
-2026-07-01 20:03:32.962 | 26/07/01 17:03:32 INFO BlockManagerMaster: Registering BlockManager BlockManagerId(driver, a2a6764dfa13, 33033, None)
-2026-07-01 20:03:32.973 | 26/07/01 17:03:32 INFO BlockManagerMasterEndpoint: Registering block manager a2a6764dfa13:33033 with 434.4 MiB RAM, BlockManagerId(driver, a2a6764dfa13, 33033, None)
-2026-07-01 20:03:32.980 | 26/07/01 17:03:32 INFO BlockManagerMaster: Registered BlockManager BlockManagerId(driver, a2a6764dfa13, 33033, None)
-2026-07-01 20:03:32.984 | 26/07/01 17:03:32 INFO BlockManager: Initialized BlockManager: BlockManagerId(driver, a2a6764dfa13, 33033, None)
-2026-07-01 20:03:34.691 | 2026-07-01 17:03:34 - INFO - [__main__:281] - Loading IOC database from MinIO
-2026-07-01 20:03:49.218 | 2026-07-01 17:03:49 - INFO - [__main__:302] - Parsed network stream into a DataFrame
-2026-07-01 20:03:49.487 | 2026-07-01 17:03:49 - INFO - [__main__:35] - Starting port scan detection
+
 2026-07-01 20:04:47.176 | -------------------------------------------
 2026-07-01 20:04:47.176 | Batch: 0
 2026-07-01 20:04:47.177 | -------------------------------------------
@@ -107,59 +59,6 @@
 2026-07-01 20:09:31.829 | 
 
 
-
-
-
-2026-07-01 20:57:16.567 | spark 17:57:16.55 INFO  ==> 
-2026-07-01 20:57:16.584 | spark 17:57:16.57 INFO  ==> Welcome to the Bitnami spark container
-2026-07-01 20:57:16.609 | spark 17:57:16.60 INFO  ==> Subscribe to project updates by watching https://github.com/bitnami/containers
-2026-07-01 20:57:16.631 | spark 17:57:16.62 INFO  ==> Submit issues and feature requests at https://github.com/bitnami/containers/issues
-2026-07-01 20:57:16.653 | spark 17:57:16.64 INFO  ==> Upgrade to Tanzu Application Catalog for production environments to access custom-configured and pre-packaged software components. Gain enhanced features, including Software Bill of Materials (SBOM), CVE scan result reports, and VEX documents. To learn more, visit https://bitnami.com/enterprise
-2026-07-01 20:57:16.685 | spark 17:57:16.67 INFO  ==> 
-2026-07-01 20:57:16.791 | 
-2026-07-01 20:57:30.077 | 26/07/01 17:57:30 INFO SparkContext: Running Spark version 3.5.1
-2026-07-01 20:57:30.088 | 26/07/01 17:57:30 INFO SparkContext: OS info Linux, 6.10.14-linuxkit, amd64
-2026-07-01 20:57:30.090 | 26/07/01 17:57:30 INFO SparkContext: Java version 17.0.12
-2026-07-01 20:57:30.243 | 26/07/01 17:57:30 INFO ResourceUtils: ==============================================================
-2026-07-01 20:57:30.244 | 26/07/01 17:57:30 INFO ResourceUtils: No custom resources configured for spark.driver.
-2026-07-01 20:57:30.245 | 26/07/01 17:57:30 INFO ResourceUtils: ==============================================================
-2026-07-01 20:57:30.247 | 26/07/01 17:57:30 INFO SparkContext: Submitted application: KafkaToKafkaStreaming
-2026-07-01 20:57:30.334 | 26/07/01 17:57:30 INFO ResourceProfile: Default ResourceProfile created, executor resources: Map(cores -> name: cores, amount: 1, script: , vendor: , memory -> name: memory, amount: 1024, script: , vendor: , offHeap -> name: offHeap, amount: 0, script: , vendor: ), task resources: Map(cpus -> name: cpus, amount: 1.0)
-2026-07-01 20:57:30.362 | 26/07/01 17:57:30 INFO ResourceProfile: Limiting resource is cpu
-2026-07-01 20:57:30.364 | 26/07/01 17:57:30 INFO ResourceProfileManager: Added ResourceProfile id: 0
-2026-07-01 20:57:30.555 | 26/07/01 17:57:30 INFO SecurityManager: Changing view acls to: spark
-2026-07-01 20:57:30.557 | 26/07/01 17:57:30 INFO SecurityManager: Changing modify acls to: spark
-2026-07-01 20:57:30.559 | 26/07/01 17:57:30 INFO SecurityManager: Changing view acls groups to: 
-2026-07-01 20:57:30.561 | 26/07/01 17:57:30 INFO SecurityManager: Changing modify acls groups to: 
-2026-07-01 20:57:30.563 | 26/07/01 17:57:30 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users with view permissions: spark; groups with view permissions: EMPTY; users with modify permissions: spark; groups with modify permissions: EMPTY
-2026-07-01 20:57:30.835 | 26/07/01 17:57:30 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
-2026-07-01 20:57:32.101 | 26/07/01 17:57:32 INFO Utils: Successfully started service 'sparkDriver' on port 40813.
-2026-07-01 20:57:32.224 | 26/07/01 17:57:32 INFO SparkEnv: Registering MapOutputTracker
-2026-07-01 20:57:32.402 | 26/07/01 17:57:32 INFO SparkEnv: Registering BlockManagerMaster
-2026-07-01 20:57:32.483 | 26/07/01 17:57:32 INFO BlockManagerMasterEndpoint: Using org.apache.spark.storage.DefaultTopologyMapper for getting topology information
-2026-07-01 20:57:32.488 | 26/07/01 17:57:32 INFO BlockManagerMasterEndpoint: BlockManagerMasterEndpoint up
-2026-07-01 20:57:32.511 | 26/07/01 17:57:32 INFO SparkEnv: Registering BlockManagerMasterHeartbeat
-2026-07-01 20:57:32.672 | 26/07/01 17:57:32 INFO DiskBlockManager: Created local directory at /tmp/blockmgr-0fbfbfeb-7b19-44ac-b316-4ba3472eb730
-2026-07-01 20:57:32.769 | 26/07/01 17:57:32 INFO MemoryStore: MemoryStore started with capacity 434.4 MiB
-2026-07-01 20:57:32.881 | 26/07/01 17:57:32 INFO SparkEnv: Registering OutputCommitCoordinator
-2026-07-01 20:57:33.592 | 26/07/01 17:57:33 INFO JettyUtils: Start Jetty 0.0.0.0:4040 for SparkUI
-2026-07-01 20:57:33.941 | 26/07/01 17:57:33 INFO Utils: Successfully started service 'SparkUI' on port 4040.
-2026-07-01 20:57:34.704 | 26/07/01 17:57:34 INFO Executor: Starting executor ID driver on host c361ed0a7c02
-2026-07-01 20:57:34.708 | 26/07/01 17:57:34 INFO Executor: OS info Linux, 6.10.14-linuxkit, amd64
-2026-07-01 20:57:34.710 | 26/07/01 17:57:34 INFO Executor: Java version 17.0.12
-2026-07-01 20:57:34.760 | 26/07/01 17:57:34 INFO Executor: Starting executor with user classpath (userClassPathFirst = false): ''
-2026-07-01 20:57:34.763 | 26/07/01 17:57:34 INFO Executor: Created or updated repl class loader org.apache.spark.util.MutableURLClassLoader@51384fb8 for default.
-2026-07-01 20:57:34.896 | 26/07/01 17:57:34 INFO Utils: Successfully started service 'org.apache.spark.network.netty.NettyBlockTransferService' on port 41601.
-2026-07-01 20:57:34.896 | 26/07/01 17:57:34 INFO NettyBlockTransferService: Server created on c361ed0a7c02:41601
-2026-07-01 20:57:34.908 | 26/07/01 17:57:34 INFO BlockManager: Using org.apache.spark.storage.RandomBlockReplicationPolicy for block replication policy
-2026-07-01 20:57:34.938 | 26/07/01 17:57:34 INFO BlockManagerMaster: Registering BlockManager BlockManagerId(driver, c361ed0a7c02, 41601, None)
-2026-07-01 20:57:34.953 | 26/07/01 17:57:34 INFO BlockManagerMasterEndpoint: Registering block manager c361ed0a7c02:41601 with 434.4 MiB RAM, BlockManagerId(driver, c361ed0a7c02, 41601, None)
-2026-07-01 20:57:34.967 | 26/07/01 17:57:34 INFO BlockManagerMaster: Registered BlockManager BlockManagerId(driver, c361ed0a7c02, 41601, None)
-2026-07-01 20:57:34.974 | 26/07/01 17:57:34 INFO BlockManager: Initialized BlockManager: BlockManagerId(driver, c361ed0a7c02, 41601, None)
-2026-07-01 20:57:37.000 | 2026-07-01 17:57:36 - INFO - [__main__:286] - Loading IOC database from MinIO
-2026-07-01 20:57:58.006 | 2026-07-01 17:57:58 - INFO - [__main__:307] - Parsed network stream into a DataFrame
-2026-07-01 20:57:58.289 | 2026-07-01 17:57:58 - INFO - [__main__:35] - Starting port scan detection
-2026-07-01 20:58:00.719 | 2026-07-01 17:58:00 - INFO - [__main__:86] - Starting data exfiltration detection
 2026-07-01 20:59:41.393 | -------------------------------------------
 2026-07-01 20:59:41.394 | Batch: 0
 2026-07-01 20:59:41.394 | -------------------------------------------
@@ -204,59 +103,6 @@
 
 
 
-
-2026-07-02 10:39:58.176 | spark 07:39:58.16 INFO  ==> 
-2026-07-02 10:39:58.204 | spark 07:39:58.19 INFO  ==> Welcome to the Bitnami spark container
-2026-07-02 10:39:58.225 | spark 07:39:58.22 INFO  ==> Subscribe to project updates by watching https://github.com/bitnami/containers
-2026-07-02 10:39:58.238 | spark 07:39:58.23 INFO  ==> Submit issues and feature requests at https://github.com/bitnami/containers/issues
-2026-07-02 10:39:58.252 | spark 07:39:58.24 INFO  ==> Upgrade to Tanzu Application Catalog for production environments to access custom-configured and pre-packaged software components. Gain enhanced features, including Software Bill of Materials (SBOM), CVE scan result reports, and VEX documents. To learn more, visit https://bitnami.com/enterprise
-2026-07-02 10:39:58.266 | spark 07:39:58.26 INFO  ==> 
-2026-07-02 10:39:58.333 | 
-2026-07-02 10:40:11.138 | 26/07/02 07:40:11 INFO SparkContext: Running Spark version 3.5.1
-2026-07-02 10:40:11.147 | 26/07/02 07:40:11 INFO SparkContext: OS info Linux, 6.10.14-linuxkit, amd64
-2026-07-02 10:40:11.149 | 26/07/02 07:40:11 INFO SparkContext: Java version 17.0.12
-2026-07-02 10:40:11.276 | 26/07/02 07:40:11 INFO ResourceUtils: ==============================================================
-2026-07-02 10:40:11.277 | 26/07/02 07:40:11 INFO ResourceUtils: No custom resources configured for spark.driver.
-2026-07-02 10:40:11.278 | 26/07/02 07:40:11 INFO ResourceUtils: ==============================================================
-2026-07-02 10:40:11.280 | 26/07/02 07:40:11 INFO SparkContext: Submitted application: KafkaToKafkaStreaming
-2026-07-02 10:40:11.390 | 26/07/02 07:40:11 INFO ResourceProfile: Default ResourceProfile created, executor resources: Map(cores -> name: cores, amount: 1, script: , vendor: , memory -> name: memory, amount: 1024, script: , vendor: , offHeap -> name: offHeap, amount: 0, script: , vendor: ), task resources: Map(cpus -> name: cpus, amount: 1.0)
-2026-07-02 10:40:11.419 | 26/07/02 07:40:11 INFO ResourceProfile: Limiting resource is cpu
-2026-07-02 10:40:11.422 | 26/07/02 07:40:11 INFO ResourceProfileManager: Added ResourceProfile id: 0
-2026-07-02 10:40:11.640 | 26/07/02 07:40:11 INFO SecurityManager: Changing view acls to: spark
-2026-07-02 10:40:11.643 | 26/07/02 07:40:11 INFO SecurityManager: Changing modify acls to: spark
-2026-07-02 10:40:11.644 | 26/07/02 07:40:11 INFO SecurityManager: Changing view acls groups to: 
-2026-07-02 10:40:11.646 | 26/07/02 07:40:11 INFO SecurityManager: Changing modify acls groups to: 
-2026-07-02 10:40:11.649 | 26/07/02 07:40:11 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users with view permissions: spark; groups with view permissions: EMPTY; users with modify permissions: spark; groups with modify permissions: EMPTY
-2026-07-02 10:40:11.951 | 26/07/02 07:40:11 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
-2026-07-02 10:40:13.197 | 26/07/02 07:40:13 INFO Utils: Successfully started service 'sparkDriver' on port 32969.
-2026-07-02 10:40:13.340 | 26/07/02 07:40:13 INFO SparkEnv: Registering MapOutputTracker
-2026-07-02 10:40:13.533 | 26/07/02 07:40:13 INFO SparkEnv: Registering BlockManagerMaster
-2026-07-02 10:40:13.649 | 26/07/02 07:40:13 INFO BlockManagerMasterEndpoint: Using org.apache.spark.storage.DefaultTopologyMapper for getting topology information
-2026-07-02 10:40:13.655 | 26/07/02 07:40:13 INFO BlockManagerMasterEndpoint: BlockManagerMasterEndpoint up
-2026-07-02 10:40:13.692 | 26/07/02 07:40:13 INFO SparkEnv: Registering BlockManagerMasterHeartbeat
-2026-07-02 10:40:13.873 | 26/07/02 07:40:13 INFO DiskBlockManager: Created local directory at /tmp/blockmgr-a64e6777-5ae1-4fae-905d-307f97957bdb
-2026-07-02 10:40:13.942 | 26/07/02 07:40:13 INFO MemoryStore: MemoryStore started with capacity 434.4 MiB
-2026-07-02 10:40:14.045 | 26/07/02 07:40:14 INFO SparkEnv: Registering OutputCommitCoordinator
-2026-07-02 10:40:14.498 | 26/07/02 07:40:14 INFO JettyUtils: Start Jetty 0.0.0.0:4040 for SparkUI
-2026-07-02 10:40:14.753 | 26/07/02 07:40:14 INFO Utils: Successfully started service 'SparkUI' on port 4040.
-2026-07-02 10:40:15.312 | 26/07/02 07:40:15 INFO Executor: Starting executor ID driver on host 29b6369f99b1
-2026-07-02 10:40:15.317 | 26/07/02 07:40:15 INFO Executor: OS info Linux, 6.10.14-linuxkit, amd64
-2026-07-02 10:40:15.317 | 26/07/02 07:40:15 INFO Executor: Java version 17.0.12
-2026-07-02 10:40:15.359 | 26/07/02 07:40:15 INFO Executor: Starting executor with user classpath (userClassPathFirst = false): ''
-2026-07-02 10:40:15.367 | 26/07/02 07:40:15 INFO Executor: Created or updated repl class loader org.apache.spark.util.MutableURLClassLoader@1674c884 for default.
-2026-07-02 10:40:15.464 | 26/07/02 07:40:15 INFO Utils: Successfully started service 'org.apache.spark.network.netty.NettyBlockTransferService' on port 42767.
-2026-07-02 10:40:15.464 | 26/07/02 07:40:15 INFO NettyBlockTransferService: Server created on 29b6369f99b1:42767
-2026-07-02 10:40:15.473 | 26/07/02 07:40:15 INFO BlockManager: Using org.apache.spark.storage.RandomBlockReplicationPolicy for block replication policy
-2026-07-02 10:40:15.495 | 26/07/02 07:40:15 INFO BlockManagerMaster: Registering BlockManager BlockManagerId(driver, 29b6369f99b1, 42767, None)
-2026-07-02 10:40:15.507 | 26/07/02 07:40:15 INFO BlockManagerMasterEndpoint: Registering block manager 29b6369f99b1:42767 with 434.4 MiB RAM, BlockManagerId(driver, 29b6369f99b1, 42767, None)
-2026-07-02 10:40:15.518 | 26/07/02 07:40:15 INFO BlockManagerMaster: Registered BlockManager BlockManagerId(driver, 29b6369f99b1, 42767, None)
-2026-07-02 10:40:15.524 | 26/07/02 07:40:15 INFO BlockManager: Initialized BlockManager: BlockManagerId(driver, 29b6369f99b1, 42767, None)
-2026-07-02 10:40:17.157 | 2026-07-02 07:40:17 - INFO - [__main__:257] - Loading IOC database from MinIO
-2026-07-02 10:40:40.866 | 2026-07-02 07:40:40 - INFO - [__main__:278] - Parsed network stream into a DataFrame
-2026-07-02 10:40:41.040 | 2026-07-02 07:40:41 - INFO - [__main__:158] - Starting IOC match detection
-2026-07-02 10:40:45.440 | 2026-07-02 07:40:45 - INFO - [__main__:35] - Starting port scan detection
-2026-07-02 10:40:46.914 | 2026-07-02 07:40:46 - INFO - [__main__:86] - Starting data exfiltration detection
-2026-07-02 10:40:50.176 | 2026-07-02 07:40:50 - INFO - [__main__:311] - Spark streaming query started. Will reload IOCs in 3 hours.
 2026-07-02 10:44:06.868 | -------------------------------------------
 2026-07-02 10:44:06.869 | Batch: 0
 2026-07-02 10:44:06.869 | -------------------------------------------
@@ -309,3 +155,404 @@
 {"alert_id":"4f8a86f5fbac8c3cbe6b450b2ab654a58b889060fe8653e2a0cb9640f7dc315d","log_uid":"C8ce6cb37d1014a729","alert_type":"IOC Match","severity":"High","alert_ts":"2026-07-02T08:26:39.297Z","event_ts":"2026-07-02T08:02:58.260Z","orig_ip":"10.30.30.169","resp_ip":"49.233.9.4","ioc_score":100,"ioc_source":[],"ioc_value":["49.233.9.4:443"],"tags":["CobaltStrike"]}
 {"alert_id":"a4403ea36fa3c7a2ff61409fda9d5882bb2c83fd3e82571c51f2a6351aac3cdd","log_uid":"Cb6f6724f87044dd0a","alert_type":"IOC Match","severity":"High","alert_ts":"2026-07-02T08:26:39.297Z","event_ts":"2026-07-02T08:00:43.837Z","orig_ip":"10.10.10.33","resp_ip":"38.132.122.141","ioc_score":100,"ioc_source":[],"ioc_value":["38.132.122.141:443"],"tags":["Adaptix"]}
 {"alert_id":"4024169a918c00f83e08d9a4d3752e9326788886c68b3aaac45afed8b9759d45","log_uid":"C5a2658d39ff34a0da","alert_type":"IOC Match","severity":"High","alert_ts":"2026-07-02T08:26:39.297Z","event_ts":"2026-07-02T08:02:32.192Z","orig_ip":"10.20.20.205","resp_ip":"146.70.87.64","ioc_score":100,"ioc_source":["CarsonWilliams","varysz"],"ioc_value":["146.70.87.64:443","https://puntoscardinalestv.com/","puntoscardinalestv.com"],"tags":["Adaptix","ClickFix","etherhiding","injected","Polygon"]}
+
+
+
+
+
+2026-07-02 18:12:45.733 | spark 15:12:45.72 INFO  ==> 
+2026-07-02 18:12:45.749 | spark 15:12:45.74 INFO  ==> Welcome to the Bitnami spark container
+2026-07-02 18:12:45.765 | spark 15:12:45.76 INFO  ==> Subscribe to project updates by watching https://github.com/bitnami/containers
+2026-07-02 18:12:45.779 | spark 15:12:45.77 INFO  ==> Submit issues and feature requests at https://github.com/bitnami/containers/issues
+2026-07-02 18:12:45.794 | spark 15:12:45.79 INFO  ==> Upgrade to Tanzu Application Catalog for production environments to access custom-configured and pre-packaged software components. Gain enhanced features, including Software Bill of Materials (SBOM), CVE scan result reports, and VEX documents. To learn more, visit https://bitnami.com/enterprise
+2026-07-02 18:12:45.812 | spark 15:12:45.80 INFO  ==> 
+2026-07-02 18:12:45.883 | 
+2026-07-02 18:13:01.308 | 26/07/02 15:13:01 INFO SparkContext: Running Spark version 3.5.1
+2026-07-02 18:13:01.317 | 26/07/02 15:13:01 INFO SparkContext: OS info Linux, 6.10.14-linuxkit, amd64
+2026-07-02 18:13:01.318 | 26/07/02 15:13:01 INFO SparkContext: Java version 17.0.12
+2026-07-02 18:13:01.454 | 26/07/02 15:13:01 INFO ResourceUtils: ==============================================================
+2026-07-02 18:13:01.456 | 26/07/02 15:13:01 INFO ResourceUtils: No custom resources configured for spark.driver.
+2026-07-02 18:13:01.457 | 26/07/02 15:13:01 INFO ResourceUtils: ==============================================================
+2026-07-02 18:13:01.458 | 26/07/02 15:13:01 INFO SparkContext: Submitted application: KafkaToKafkaStreaming
+2026-07-02 18:13:01.554 | 26/07/02 15:13:01 INFO ResourceProfile: Default ResourceProfile created, executor resources: Map(cores -> name: cores, amount: 1, script: , vendor: , memory -> name: memory, amount: 1024, script: , vendor: , offHeap -> name: offHeap, amount: 0, script: , vendor: ), task resources: Map(cpus -> name: cpus, amount: 1.0)
+2026-07-02 18:13:01.584 | 26/07/02 15:13:01 INFO ResourceProfile: Limiting resource is cpu
+2026-07-02 18:13:01.586 | 26/07/02 15:13:01 INFO ResourceProfileManager: Added ResourceProfile id: 0
+2026-07-02 18:13:01.785 | 26/07/02 15:13:01 INFO SecurityManager: Changing view acls to: spark
+2026-07-02 18:13:01.787 | 26/07/02 15:13:01 INFO SecurityManager: Changing modify acls to: spark
+2026-07-02 18:13:01.789 | 26/07/02 15:13:01 INFO SecurityManager: Changing view acls groups to: 
+2026-07-02 18:13:01.790 | 26/07/02 15:13:01 INFO SecurityManager: Changing modify acls groups to: 
+2026-07-02 18:13:01.791 | 26/07/02 15:13:01 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users with view permissions: spark; groups with view permissions: EMPTY; users with modify permissions: spark; groups with modify permissions: EMPTY
+2026-07-02 18:13:02.125 | 26/07/02 15:13:02 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+2026-07-02 18:13:03.382 | 26/07/02 15:13:03 INFO Utils: Successfully started service 'sparkDriver' on port 34101.
+2026-07-02 18:13:03.494 | 26/07/02 15:13:03 INFO SparkEnv: Registering MapOutputTracker
+2026-07-02 18:13:03.639 | 26/07/02 15:13:03 INFO SparkEnv: Registering BlockManagerMaster
+2026-07-02 18:13:03.690 | 26/07/02 15:13:03 INFO BlockManagerMasterEndpoint: Using org.apache.spark.storage.DefaultTopologyMapper for getting topology information
+2026-07-02 18:13:03.692 | 26/07/02 15:13:03 INFO BlockManagerMasterEndpoint: BlockManagerMasterEndpoint up
+2026-07-02 18:13:03.711 | 26/07/02 15:13:03 INFO SparkEnv: Registering BlockManagerMasterHeartbeat
+2026-07-02 18:13:03.789 | 26/07/02 15:13:03 INFO DiskBlockManager: Created local directory at /tmp/blockmgr-be827a95-30a3-4115-ad38-3db6d2b6f2e2
+2026-07-02 18:13:03.838 | 26/07/02 15:13:03 INFO MemoryStore: MemoryStore started with capacity 434.4 MiB
+2026-07-02 18:13:03.899 | 26/07/02 15:13:03 INFO SparkEnv: Registering OutputCommitCoordinator
+2026-07-02 18:13:04.359 | 26/07/02 15:13:04 INFO JettyUtils: Start Jetty 0.0.0.0:4040 for SparkUI
+2026-07-02 18:13:04.536 | 26/07/02 15:13:04 INFO Utils: Successfully started service 'SparkUI' on port 4040.
+2026-07-02 18:13:04.993 | 26/07/02 15:13:04 INFO Executor: Starting executor ID driver on host c8da9ae54eac
+2026-07-02 18:13:04.996 | 26/07/02 15:13:04 INFO Executor: OS info Linux, 6.10.14-linuxkit, amd64
+2026-07-02 18:13:04.999 | 26/07/02 15:13:04 INFO Executor: Java version 17.0.12
+2026-07-02 18:13:05.129 | 26/07/02 15:13:05 INFO Executor: Starting executor with user classpath (userClassPathFirst = false): ''
+2026-07-02 18:13:05.133 | 26/07/02 15:13:05 INFO Executor: Created or updated repl class loader org.apache.spark.util.MutableURLClassLoader@2295ebde for default.
+2026-07-02 18:13:05.305 | 26/07/02 15:13:05 INFO Utils: Successfully started service 'org.apache.spark.network.netty.NettyBlockTransferService' on port 41395.
+2026-07-02 18:13:05.306 | 26/07/02 15:13:05 INFO NettyBlockTransferService: Server created on c8da9ae54eac:41395
+2026-07-02 18:13:05.313 | 26/07/02 15:13:05 INFO BlockManager: Using org.apache.spark.storage.RandomBlockReplicationPolicy for block replication policy
+2026-07-02 18:13:05.331 | 26/07/02 15:13:05 INFO BlockManagerMaster: Registering BlockManager BlockManagerId(driver, c8da9ae54eac, 41395, None)
+2026-07-02 18:13:05.343 | 26/07/02 15:13:05 INFO BlockManagerMasterEndpoint: Registering block manager c8da9ae54eac:41395 with 434.4 MiB RAM, BlockManagerId(driver, c8da9ae54eac, 41395, None)
+2026-07-02 18:13:05.349 | 26/07/02 15:13:05 INFO BlockManagerMaster: Registered BlockManager BlockManagerId(driver, c8da9ae54eac, 41395, None)
+2026-07-02 18:13:05.355 | 26/07/02 15:13:05 INFO BlockManager: Initialized BlockManager: BlockManagerId(driver, c8da9ae54eac, 41395, None)
+2026-07-02 18:13:07.272 | 2026-07-02 15:13:07 - INFO - [__main__:257] - Loading IOC database from MinIO
+2026-07-02 18:13:26.241 | 2026-07-02 15:13:26 - INFO - [__main__:278] - Parsed network stream into a DataFrame
+2026-07-02 18:13:26.531 | 2026-07-02 15:13:26 - INFO - [__main__:158] - Starting IOC match detection
+2026-07-02 18:13:30.432 | 2026-07-02 15:13:30 - INFO - [__main__:35] - Starting port scan detection
+2026-07-02 18:13:31.992 | 2026-07-02 15:13:31 - INFO - [__main__:86] - Starting data exfiltration detection
+2026-07-02 18:13:37.308 | 2026-07-02 15:13:37 - INFO - [__main__:313] - Spark streaming query started. Will reload IOCs in 3 hours.
+2026-07-02 18:13:59.130 | 26/07/02 15:13:59 WARN AbstractConnector: 
+2026-07-02 18:13:59.130 | java.io.IOException: No such file or directory
+2026-07-02 18:13:59.130 | 	at java.base/sun.nio.ch.NativeThread.signal(Native Method)
+2026-07-02 18:13:59.130 | 	at java.base/sun.nio.ch.ServerSocketChannelImpl.implCloseBlockingMode(ServerSocketChannelImpl.java:587)
+2026-07-02 18:13:59.130 | 	at java.base/sun.nio.ch.ServerSocketChannelImpl.implCloseSelectableChannel(ServerSocketChannelImpl.java:621)
+2026-07-02 18:13:59.130 | 	at java.base/java.nio.channels.spi.AbstractSelectableChannel.implCloseChannel(AbstractSelectableChannel.java:258)
+2026-07-02 18:13:59.130 | 	at java.base/java.nio.channels.spi.AbstractInterruptibleChannel.close(AbstractInterruptibleChannel.java:112)
+2026-07-02 18:13:59.130 | 	at org.sparkproject.jetty.server.ServerConnector.close(ServerConnector.java:371)
+2026-07-02 18:13:59.130 | 	at org.sparkproject.jetty.server.AbstractNetworkConnector.shutdown(AbstractNetworkConnector.java:104)
+2026-07-02 18:13:59.130 | 	at org.sparkproject.jetty.server.Server.doStop(Server.java:444)
+2026-07-02 18:13:59.130 | 	at org.sparkproject.jetty.util.component.AbstractLifeCycle.stop(AbstractLifeCycle.java:94)
+2026-07-02 18:13:59.130 | 	at org.apache.spark.ui.ServerInfo.stop(JettyUtils.scala:532)
+2026-07-02 18:13:59.130 | 	at org.apache.spark.ui.WebUI.$anonfun$stop$2(WebUI.scala:182)
+2026-07-02 18:13:59.130 | 	at org.apache.spark.ui.WebUI.$anonfun$stop$2$adapted(WebUI.scala:182)
+2026-07-02 18:13:59.130 | 	at scala.Option.foreach(Option.scala:407)
+2026-07-02 18:13:59.130 | 	at org.apache.spark.ui.WebUI.stop(WebUI.scala:182)
+2026-07-02 18:13:59.130 | 	at org.apache.spark.ui.SparkUI.stop(SparkUI.scala:157)
+2026-07-02 18:13:59.130 | 	at org.apache.spark.SparkContext.$anonfun$stop$7(SparkContext.scala:2253)
+2026-07-02 18:13:59.130 | 	at org.apache.spark.SparkContext.$anonfun$stop$7$adapted(SparkContext.scala:2253)
+2026-07-02 18:13:59.130 | 	at scala.Option.foreach(Option.scala:407)
+2026-07-02 18:13:59.130 | 	at org.apache.spark.SparkContext.$anonfun$stop$6(SparkContext.scala:2253)
+2026-07-02 18:13:59.130 | 	at org.apache.spark.util.Utils$.tryLogNonFatalError(Utils.scala:1375)
+2026-07-02 18:13:59.130 | 	at org.apache.spark.SparkContext.stop(SparkContext.scala:2253)
+2026-07-02 18:13:59.130 | 	at org.apache.spark.SparkContext.stop(SparkContext.scala:2216)
+2026-07-02 18:13:59.130 | 	at org.apache.spark.SparkContext.$anonfun$new$34(SparkContext.scala:686)
+2026-07-02 18:13:59.130 | 	at org.apache.spark.util.SparkShutdownHook.run(ShutdownHookManager.scala:214)
+2026-07-02 18:13:59.130 | 	at org.apache.spark.util.SparkShutdownHookManager.$anonfun$runAll$2(ShutdownHookManager.scala:188)
+2026-07-02 18:13:59.130 | 	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)
+2026-07-02 18:13:59.130 | 	at org.apache.spark.util.Utils$.logUncaughtExceptions(Utils.scala:1928)
+2026-07-02 18:13:59.130 | 	at org.apache.spark.util.SparkShutdownHookManager.$anonfun$runAll$1(ShutdownHookManager.scala:188)
+2026-07-02 18:13:59.130 | 	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)
+2026-07-02 18:13:59.130 | 	at scala.util.Try$.apply(Try.scala:213)
+2026-07-02 18:13:59.130 | 	at org.apache.spark.util.SparkShutdownHookManager.runAll(ShutdownHookManager.scala:188)
+2026-07-02 18:13:59.130 | 	at org.apache.spark.util.SparkShutdownHookManager$$anon$2.run(ShutdownHookManager.scala:178)
+2026-07-02 18:13:59.130 | 	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
+2026-07-02 18:13:59.130 | 	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+2026-07-02 18:13:59.130 | 	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+2026-07-02 18:13:59.130 | 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+2026-07-02 18:13:59.130 | 	at java.base/java.lang.Thread.run(Thread.java:840)
+2026-07-02 18:13:59.158 | 26/07/02 15:13:59 ERROR WriteToDataSourceV2Exec: Data source write support MicroBatchWrite[epoch: 5, writer: org.apache.spark.sql.kafka010.KafkaStreamingWrite@5fe75c13] is aborting.
+2026-07-02 18:13:59.161 | 26/07/02 15:13:59 ERROR WriteToDataSourceV2Exec: Data source write support MicroBatchWrite[epoch: 5, writer: org.apache.spark.sql.kafka010.KafkaStreamingWrite@5fe75c13] aborted.
+2026-07-02 18:13:59.972 | 26/07/02 15:13:59 ERROR MicroBatchExecution: Query [id = 40a3025c-1dfe-4989-aa0a-c250289c4630, runId = 7689b773-75b0-46f5-81c9-1e9cdd0dc474] terminated with error
+2026-07-02 18:13:59.972 | org.apache.spark.SparkException: Job aborted due to stage failure: Task serialization failed: java.lang.IllegalStateException: Cannot call methods on a stopped SparkContext.
+2026-07-02 18:13:59.972 | This stopped SparkContext was created at:
+2026-07-02 18:13:59.972 | 
+2026-07-02 18:13:59.972 | org.apache.spark.api.java.JavaSparkContext.<init>(JavaSparkContext.scala:58)
+2026-07-02 18:13:59.972 | java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+2026-07-02 18:13:59.972 | java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
+2026-07-02 18:13:59.972 | java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+2026-07-02 18:13:59.972 | java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:500)
+2026-07-02 18:13:59.972 | java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:481)
+2026-07-02 18:13:59.972 | py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:247)
+2026-07-02 18:13:59.972 | py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+2026-07-02 18:13:59.972 | py4j.Gateway.invoke(Gateway.java:238)
+2026-07-02 18:13:59.972 | py4j.commands.ConstructorCommand.invokeConstructor(ConstructorCommand.java:80)
+2026-07-02 18:13:59.972 | py4j.commands.ConstructorCommand.execute(ConstructorCommand.java:69)
+2026-07-02 18:13:59.972 | py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+2026-07-02 18:13:59.972 | py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+2026-07-02 18:13:59.972 | java.base/java.lang.Thread.run(Thread.java:840)
+2026-07-02 18:13:59.972 | 
+2026-07-02 18:13:59.972 | The currently active SparkContext was created at:
+2026-07-02 18:13:59.972 | 
+2026-07-02 18:13:59.972 | org.apache.spark.api.java.JavaSparkContext.<init>(JavaSparkContext.scala:58)
+2026-07-02 18:13:59.972 | java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+2026-07-02 18:13:59.972 | java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
+2026-07-02 18:13:59.972 | java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+2026-07-02 18:13:59.972 | java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:500)
+2026-07-02 18:13:59.972 | java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:481)
+2026-07-02 18:13:59.972 | py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:247)
+2026-07-02 18:13:59.972 | py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+2026-07-02 18:13:59.972 | py4j.Gateway.invoke(Gateway.java:238)
+2026-07-02 18:13:59.972 | py4j.commands.ConstructorCommand.invokeConstructor(ConstructorCommand.java:80)
+2026-07-02 18:13:59.972 | py4j.commands.ConstructorCommand.execute(ConstructorCommand.java:69)
+2026-07-02 18:13:59.972 | py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+2026-07-02 18:13:59.972 | py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+2026-07-02 18:13:59.972 | java.base/java.lang.Thread.run(Thread.java:840)
+2026-07-02 18:13:59.972 |          
+2026-07-02 18:13:59.972 | java.lang.IllegalStateException: Cannot call methods on a stopped SparkContext.
+2026-07-02 18:13:59.972 | This stopped SparkContext was created at:
+2026-07-02 18:13:59.972 | 
+2026-07-02 18:13:59.972 | org.apache.spark.api.java.JavaSparkContext.<init>(JavaSparkContext.scala:58)
+2026-07-02 18:13:59.972 | java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+2026-07-02 18:13:59.972 | java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
+2026-07-02 18:13:59.972 | java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+2026-07-02 18:13:59.972 | java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:500)
+2026-07-02 18:13:59.972 | java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:481)
+2026-07-02 18:13:59.972 | py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:247)
+2026-07-02 18:13:59.972 | py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+2026-07-02 18:13:59.972 | py4j.Gateway.invoke(Gateway.java:238)
+2026-07-02 18:13:59.972 | py4j.commands.ConstructorCommand.invokeConstructor(ConstructorCommand.java:80)
+2026-07-02 18:13:59.972 | py4j.commands.ConstructorCommand.execute(ConstructorCommand.java:69)
+2026-07-02 18:13:59.972 | py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+2026-07-02 18:13:59.972 | py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+2026-07-02 18:13:59.972 | java.base/java.lang.Thread.run(Thread.java:840)
+2026-07-02 18:13:59.972 | 
+2026-07-02 18:13:59.972 | The currently active SparkContext was created at:
+2026-07-02 18:13:59.972 | 
+2026-07-02 18:13:59.972 | org.apache.spark.api.java.JavaSparkContext.<init>(JavaSparkContext.scala:58)
+2026-07-02 18:13:59.972 | java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+2026-07-02 18:13:59.972 | java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
+2026-07-02 18:13:59.972 | java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+2026-07-02 18:13:59.972 | java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:500)
+2026-07-02 18:13:59.972 | java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:481)
+2026-07-02 18:13:59.972 | py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:247)
+2026-07-02 18:13:59.972 | py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+2026-07-02 18:13:59.972 | py4j.Gateway.invoke(Gateway.java:238)
+2026-07-02 18:13:59.972 | py4j.commands.ConstructorCommand.invokeConstructor(ConstructorCommand.java:80)
+2026-07-02 18:13:59.972 | py4j.commands.ConstructorCommand.execute(ConstructorCommand.java:69)
+2026-07-02 18:13:59.972 | py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+2026-07-02 18:13:59.972 | py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+2026-07-02 18:13:59.972 | java.base/java.lang.Thread.run(Thread.java:840)
+2026-07-02 18:13:59.972 |          
+2026-07-02 18:13:59.972 | 	at org.apache.spark.SparkContext.assertNotStopped(SparkContext.scala:122)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.SparkContext.broadcastInternal(SparkContext.scala:1659)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.SparkContext.broadcast(SparkContext.scala:1644)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.submitMissingTasks(DAGScheduler.scala:1585)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.submitStage(DAGScheduler.scala:1402)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.$anonfun$submitStage$5(DAGScheduler.scala:1405)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.$anonfun$submitStage$5$adapted(DAGScheduler.scala:1404)
+2026-07-02 18:13:59.972 | 	at scala.collection.immutable.List.foreach(List.scala:431)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.submitStage(DAGScheduler.scala:1404)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.$anonfun$submitStage$5(DAGScheduler.scala:1405)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.$anonfun$submitStage$5$adapted(DAGScheduler.scala:1404)
+2026-07-02 18:13:59.972 | 	at scala.collection.immutable.List.foreach(List.scala:431)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.submitStage(DAGScheduler.scala:1404)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.handleJobSubmitted(DAGScheduler.scala:1337)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.doOnReceive(DAGScheduler.scala:3003)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:2994)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:2983)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.util.EventLoop$$anon$1.run(EventLoop.scala:49)
+2026-07-02 18:13:59.972 | 
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.failJobAndIndependentStages(DAGScheduler.scala:2856)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.$anonfun$abortStage$2(DAGScheduler.scala:2792)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.$anonfun$abortStage$2$adapted(DAGScheduler.scala:2791)
+2026-07-02 18:13:59.972 | 	at scala.collection.mutable.ResizableArray.foreach(ResizableArray.scala:62)
+2026-07-02 18:13:59.972 | 	at scala.collection.mutable.ResizableArray.foreach$(ResizableArray.scala:55)
+2026-07-02 18:13:59.972 | 	at scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:49)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.abortStage(DAGScheduler.scala:2791)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.submitMissingTasks(DAGScheduler.scala:1595)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.submitStage(DAGScheduler.scala:1402)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.$anonfun$submitStage$5(DAGScheduler.scala:1405)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.$anonfun$submitStage$5$adapted(DAGScheduler.scala:1404)
+2026-07-02 18:13:59.972 | 	at scala.collection.immutable.List.foreach(List.scala:431)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.submitStage(DAGScheduler.scala:1404)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.$anonfun$submitStage$5(DAGScheduler.scala:1405)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.$anonfun$submitStage$5$adapted(DAGScheduler.scala:1404)
+2026-07-02 18:13:59.972 | 	at scala.collection.immutable.List.foreach(List.scala:431)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.submitStage(DAGScheduler.scala:1404)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.handleJobSubmitted(DAGScheduler.scala:1337)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.doOnReceive(DAGScheduler.scala:3003)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:2994)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:2983)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.util.EventLoop$$anon$1.run(EventLoop.scala:49)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.runJob(DAGScheduler.scala:989)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.SparkContext.runJob(SparkContext.scala:2398)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.datasources.v2.V2TableWriteExec.writeWithV2(WriteToDataSourceV2Exec.scala:385)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.datasources.v2.V2TableWriteExec.writeWithV2$(WriteToDataSourceV2Exec.scala:359)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.datasources.v2.WriteToDataSourceV2Exec.writeWithV2(WriteToDataSourceV2Exec.scala:307)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.datasources.v2.WriteToDataSourceV2Exec.run(WriteToDataSourceV2Exec.scala:318)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.result$lzycompute(V2CommandExec.scala:43)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.result(V2CommandExec.scala:43)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.executeCollect(V2CommandExec.scala:49)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.Dataset.collectFromPlan(Dataset.scala:4332)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.Dataset.$anonfun$collect$1(Dataset.scala:3573)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.Dataset.$anonfun$withAction$2(Dataset.scala:4322)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.QueryExecution$.withInternalError(QueryExecution.scala:546)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.Dataset.$anonfun$withAction$1(Dataset.scala:4320)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId$6(SQLExecution.scala:125)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.SQLExecution$.withSQLConfPropagated(SQLExecution.scala:201)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId$1(SQLExecution.scala:108)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:900)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.SQLExecution$.withNewExecutionId(SQLExecution.scala:66)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.Dataset.withAction(Dataset.scala:4320)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.Dataset.collect(Dataset.scala:3573)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.streaming.MicroBatchExecution.$anonfun$runBatch$17(MicroBatchExecution.scala:741)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId$6(SQLExecution.scala:125)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.SQLExecution$.withSQLConfPropagated(SQLExecution.scala:201)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId$1(SQLExecution.scala:108)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:900)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.SQLExecution$.withNewExecutionId(SQLExecution.scala:66)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.streaming.MicroBatchExecution.$anonfun$runBatch$16(MicroBatchExecution.scala:729)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.streaming.ProgressReporter.reportTimeTaken(ProgressReporter.scala:427)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.streaming.ProgressReporter.reportTimeTaken$(ProgressReporter.scala:425)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.streaming.StreamExecution.reportTimeTaken(StreamExecution.scala:67)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.streaming.MicroBatchExecution.runBatch(MicroBatchExecution.scala:729)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.streaming.MicroBatchExecution.$anonfun$runActivatedStream$2(MicroBatchExecution.scala:286)
+2026-07-02 18:13:59.972 | 	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.streaming.ProgressReporter.reportTimeTaken(ProgressReporter.scala:427)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.streaming.ProgressReporter.reportTimeTaken$(ProgressReporter.scala:425)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.streaming.StreamExecution.reportTimeTaken(StreamExecution.scala:67)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.streaming.MicroBatchExecution.$anonfun$runActivatedStream$1(MicroBatchExecution.scala:249)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.streaming.ProcessingTimeExecutor.execute(TriggerExecutor.scala:67)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.streaming.MicroBatchExecution.runActivatedStream(MicroBatchExecution.scala:239)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.streaming.StreamExecution.$anonfun$runStream$1(StreamExecution.scala:311)
+2026-07-02 18:13:59.972 | 	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:900)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.streaming.StreamExecution.org$apache$spark$sql$execution$streaming$StreamExecution$$runStream(StreamExecution.scala:289)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.streaming.StreamExecution$$anon$1.$anonfun$run$1(StreamExecution.scala:211)
+2026-07-02 18:13:59.972 | 	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.JobArtifactSet$.withActiveJobArtifactState(JobArtifactSet.scala:94)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.sql.execution.streaming.StreamExecution$$anon$1.run(StreamExecution.scala:211)
+2026-07-02 18:13:59.972 | Caused by: java.lang.IllegalStateException: Cannot call methods on a stopped SparkContext.
+2026-07-02 18:13:59.972 | This stopped SparkContext was created at:
+2026-07-02 18:13:59.972 | 
+2026-07-02 18:13:59.972 | org.apache.spark.api.java.JavaSparkContext.<init>(JavaSparkContext.scala:58)
+2026-07-02 18:13:59.972 | java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+2026-07-02 18:13:59.972 | java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
+2026-07-02 18:13:59.972 | java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+2026-07-02 18:13:59.972 | java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:500)
+2026-07-02 18:13:59.972 | java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:481)
+2026-07-02 18:13:59.972 | py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:247)
+2026-07-02 18:13:59.972 | py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+2026-07-02 18:13:59.972 | py4j.Gateway.invoke(Gateway.java:238)
+2026-07-02 18:13:59.972 | py4j.commands.ConstructorCommand.invokeConstructor(ConstructorCommand.java:80)
+2026-07-02 18:13:59.972 | py4j.commands.ConstructorCommand.execute(ConstructorCommand.java:69)
+2026-07-02 18:13:59.972 | py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+2026-07-02 18:13:59.972 | py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+2026-07-02 18:13:59.972 | java.base/java.lang.Thread.run(Thread.java:840)
+2026-07-02 18:13:59.972 | 
+2026-07-02 18:13:59.972 | The currently active SparkContext was created at:
+2026-07-02 18:13:59.972 | 
+2026-07-02 18:13:59.972 | org.apache.spark.api.java.JavaSparkContext.<init>(JavaSparkContext.scala:58)
+2026-07-02 18:13:59.972 | java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+2026-07-02 18:13:59.972 | java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
+2026-07-02 18:13:59.972 | java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+2026-07-02 18:13:59.972 | java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:500)
+2026-07-02 18:13:59.972 | java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:481)
+2026-07-02 18:13:59.972 | py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:247)
+2026-07-02 18:13:59.972 | py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+2026-07-02 18:13:59.972 | py4j.Gateway.invoke(Gateway.java:238)
+2026-07-02 18:13:59.972 | py4j.commands.ConstructorCommand.invokeConstructor(ConstructorCommand.java:80)
+2026-07-02 18:13:59.972 | py4j.commands.ConstructorCommand.execute(ConstructorCommand.java:69)
+2026-07-02 18:13:59.972 | py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+2026-07-02 18:13:59.972 | py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+2026-07-02 18:13:59.972 | java.base/java.lang.Thread.run(Thread.java:840)
+2026-07-02 18:13:59.972 |          
+2026-07-02 18:13:59.972 | 	at org.apache.spark.SparkContext.assertNotStopped(SparkContext.scala:122)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.SparkContext.broadcastInternal(SparkContext.scala:1659)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.SparkContext.broadcast(SparkContext.scala:1644)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.submitMissingTasks(DAGScheduler.scala:1585)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.submitStage(DAGScheduler.scala:1402)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.$anonfun$submitStage$5(DAGScheduler.scala:1405)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.$anonfun$submitStage$5$adapted(DAGScheduler.scala:1404)
+2026-07-02 18:13:59.972 | 	at scala.collection.immutable.List.foreach(List.scala:431)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.submitStage(DAGScheduler.scala:1404)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.$anonfun$submitStage$5(DAGScheduler.scala:1405)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.$anonfun$submitStage$5$adapted(DAGScheduler.scala:1404)
+2026-07-02 18:13:59.972 | 	at scala.collection.immutable.List.foreach(List.scala:431)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.submitStage(DAGScheduler.scala:1404)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGScheduler.handleJobSubmitted(DAGScheduler.scala:1337)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.doOnReceive(DAGScheduler.scala:3003)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:2994)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:2983)
+2026-07-02 18:13:59.972 | 	at org.apache.spark.util.EventLoop$$anon$1.run(EventLoop.scala:49)
+2026-07-02 18:14:21.772 | spark 15:14:21.76 INFO  ==> 
+2026-07-02 18:14:21.788 | spark 15:14:21.78 INFO  ==> Welcome to the Bitnami spark container
+2026-07-02 18:14:21.803 | spark 15:14:21.79 INFO  ==> Subscribe to project updates by watching https://github.com/bitnami/containers
+2026-07-02 18:14:21.818 | spark 15:14:21.81 INFO  ==> Submit issues and feature requests at https://github.com/bitnami/containers/issues
+2026-07-02 18:14:21.834 | spark 15:14:21.83 INFO  ==> Upgrade to Tanzu Application Catalog for production environments to access custom-configured and pre-packaged software components. Gain enhanced features, including Software Bill of Materials (SBOM), CVE scan result reports, and VEX documents. To learn more, visit https://bitnami.com/enterprise
+2026-07-02 18:14:21.863 | spark 15:14:21.85 INFO  ==> 
+2026-07-02 18:14:21.918 | 
+2026-07-02 18:14:35.521 | 26/07/02 15:14:35 INFO SparkContext: Running Spark version 3.5.1
+2026-07-02 18:14:35.535 | 26/07/02 15:14:35 INFO SparkContext: OS info Linux, 6.10.14-linuxkit, amd64
+2026-07-02 18:14:35.535 | 26/07/02 15:14:35 INFO SparkContext: Java version 17.0.12
+2026-07-02 18:14:35.714 | 26/07/02 15:14:35 INFO ResourceUtils: ==============================================================
+2026-07-02 18:14:35.719 | 26/07/02 15:14:35 INFO ResourceUtils: No custom resources configured for spark.driver.
+2026-07-02 18:14:35.719 | 26/07/02 15:14:35 INFO ResourceUtils: ==============================================================
+2026-07-02 18:14:35.723 | 26/07/02 15:14:35 INFO SparkContext: Submitted application: KafkaToKafkaStreaming
+2026-07-02 18:14:35.844 | 26/07/02 15:14:35 INFO ResourceProfile: Default ResourceProfile created, executor resources: Map(cores -> name: cores, amount: 1, script: , vendor: , memory -> name: memory, amount: 1024, script: , vendor: , offHeap -> name: offHeap, amount: 0, script: , vendor: ), task resources: Map(cpus -> name: cpus, amount: 1.0)
+2026-07-02 18:14:35.876 | 26/07/02 15:14:35 INFO ResourceProfile: Limiting resource is cpu
+2026-07-02 18:14:35.879 | 26/07/02 15:14:35 INFO ResourceProfileManager: Added ResourceProfile id: 0
+2026-07-02 18:14:36.067 | 26/07/02 15:14:36 INFO SecurityManager: Changing view acls to: spark
+2026-07-02 18:14:36.067 | 26/07/02 15:14:36 INFO SecurityManager: Changing modify acls to: spark
+2026-07-02 18:14:36.068 | 26/07/02 15:14:36 INFO SecurityManager: Changing view acls groups to: 
+2026-07-02 18:14:36.069 | 26/07/02 15:14:36 INFO SecurityManager: Changing modify acls groups to: 
+2026-07-02 18:14:36.071 | 26/07/02 15:14:36 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users with view permissions: spark; groups with view permissions: EMPTY; users with modify permissions: spark; groups with modify permissions: EMPTY
+2026-07-02 18:14:36.343 | 26/07/02 15:14:36 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+2026-07-02 18:14:37.789 | 26/07/02 15:14:37 INFO Utils: Successfully started service 'sparkDriver' on port 43509.
+2026-07-02 18:14:37.914 | 26/07/02 15:14:37 INFO SparkEnv: Registering MapOutputTracker
+2026-07-02 18:14:38.077 | 26/07/02 15:14:38 INFO SparkEnv: Registering BlockManagerMaster
+2026-07-02 18:14:38.132 | 26/07/02 15:14:38 INFO BlockManagerMasterEndpoint: Using org.apache.spark.storage.DefaultTopologyMapper for getting topology information
+2026-07-02 18:14:38.135 | 26/07/02 15:14:38 INFO BlockManagerMasterEndpoint: BlockManagerMasterEndpoint up
+2026-07-02 18:14:38.158 | 26/07/02 15:14:38 INFO SparkEnv: Registering BlockManagerMasterHeartbeat
+2026-07-02 18:14:38.223 | 26/07/02 15:14:38 INFO DiskBlockManager: Created local directory at /tmp/blockmgr-8989d2df-8cec-401c-9660-cedaebfec5a5
+2026-07-02 18:14:38.276 | 26/07/02 15:14:38 INFO MemoryStore: MemoryStore started with capacity 434.4 MiB
+2026-07-02 18:14:38.345 | 26/07/02 15:14:38 INFO SparkEnv: Registering OutputCommitCoordinator
+2026-07-02 18:14:38.957 | 26/07/02 15:14:38 INFO JettyUtils: Start Jetty 0.0.0.0:4040 for SparkUI
+2026-07-02 18:14:39.221 | 26/07/02 15:14:39 INFO Utils: Successfully started service 'SparkUI' on port 4040.
+2026-07-02 18:14:39.953 | 26/07/02 15:14:39 INFO Executor: Starting executor ID driver on host c8da9ae54eac
+2026-07-02 18:14:39.954 | 26/07/02 15:14:39 INFO Executor: OS info Linux, 6.10.14-linuxkit, amd64
+2026-07-02 18:14:39.955 | 26/07/02 15:14:39 INFO Executor: Java version 17.0.12
+2026-07-02 18:14:39.995 | 26/07/02 15:14:39 INFO Executor: Starting executor with user classpath (userClassPathFirst = false): ''
+2026-07-02 18:14:39.998 | 26/07/02 15:14:39 INFO Executor: Created or updated repl class loader org.apache.spark.util.MutableURLClassLoader@2295ebde for default.
+2026-07-02 18:14:40.096 | 26/07/02 15:14:40 INFO Utils: Successfully started service 'org.apache.spark.network.netty.NettyBlockTransferService' on port 34375.
+2026-07-02 18:14:40.096 | 26/07/02 15:14:40 INFO NettyBlockTransferService: Server created on c8da9ae54eac:34375
+2026-07-02 18:14:40.103 | 26/07/02 15:14:40 INFO BlockManager: Using org.apache.spark.storage.RandomBlockReplicationPolicy for block replication policy
+2026-07-02 18:14:40.122 | 26/07/02 15:14:40 INFO BlockManagerMaster: Registering BlockManager BlockManagerId(driver, c8da9ae54eac, 34375, None)
+2026-07-02 18:14:40.133 | 26/07/02 15:14:40 INFO BlockManagerMasterEndpoint: Registering block manager c8da9ae54eac:34375 with 434.4 MiB RAM, BlockManagerId(driver, c8da9ae54eac, 34375, None)
+2026-07-02 18:14:40.140 | 26/07/02 15:14:40 INFO BlockManagerMaster: Registered BlockManager BlockManagerId(driver, c8da9ae54eac, 34375, None)
+2026-07-02 18:14:40.144 | 26/07/02 15:14:40 INFO BlockManager: Initialized BlockManager: BlockManagerId(driver, c8da9ae54eac, 34375, None)
+2026-07-02 18:14:41.952 | 2026-07-02 15:14:41 - INFO - [__main__:257] - Loading IOC database from MinIO
+2026-07-02 18:15:09.676 | 2026-07-02 15:15:09 - INFO - [__main__:278] - Parsed network stream into a DataFrame
+2026-07-02 18:15:10.175 | 2026-07-02 15:15:10 - INFO - [__main__:158] - Starting IOC match detection
+2026-07-02 18:15:16.162 | 2026-07-02 15:15:16 - INFO - [__main__:35] - Starting port scan detection
+2026-07-02 18:15:18.585 | 2026-07-02 15:15:18 - INFO - [__main__:86] - Starting data exfiltration detection
+2026-07-02 18:15:25.413 | 2026-07-02 15:15:25 - INFO - [__main__:313] - Spark streaming query started. Will reload IOCs in 3 hours.
+2026-07-02 18:19:14.011 | -------------------------------------------
+2026-07-02 18:19:14.011 | Batch: 0
+2026-07-02 18:19:14.011 | -------------------------------------------
+2026-07-02 18:19:18.535 | +--------+-------+----------+--------+--------+--------+-------+-------+---------+----------+---------+----+
+2026-07-02 18:19:18.535 | |alert_id|log_uid|alert_type|severity|alert_ts|event_ts|orig_ip|resp_ip|ioc_score|ioc_source|ioc_value|tags|
+2026-07-02 18:19:18.535 | +--------+-------+----------+--------+--------+--------+-------+-------+---------+----------+---------+----+
+2026-07-02 18:19:18.535 | +--------+-------+----------+--------+--------+--------+-------+-------+---------+----------+---------+----+
+2026-07-02 18:19:18.535 | 
+2026-07-02 18:31:59.903 | -------------------------------------------
+2026-07-02 18:31:59.904 | Batch: 1
+2026-07-02 18:31:59.904 | -------------------------------------------
+2026-07-02 18:32:04.002 | +--------+-------+----------+--------+--------+--------+-------+-------+---------+----------+---------+----+
+2026-07-02 18:32:04.002 | |alert_id|log_uid|alert_type|severity|alert_ts|event_ts|orig_ip|resp_ip|ioc_score|ioc_source|ioc_value|tags|
+2026-07-02 18:32:04.002 | +--------+-------+----------+--------+--------+--------+-------+-------+---------+----------+---------+----+
+2026-07-02 18:32:04.002 | +--------+-------+----------+--------+--------+--------+-------+-------+---------+----------+---------+----+
+2026-07-02 18:32:04.002 | 
+2026-07-02 18:47:35.804 | -------------------------------------------
+2026-07-02 18:47:35.805 | Batch: 2
+2026-07-02 18:47:35.805 | -------------------------------------------
+2026-07-02 18:49:16.918 | +----------------------------------------------------------------+------------------+-----------------+--------+-----------------------+--------------------------+---------------+--------------+---------+------------------------+-------------------------------------------------------------+--------------------------------------------------------+
+2026-07-02 18:49:16.918 | |alert_id                                                        |log_uid           |alert_type       |severity|alert_ts               |event_ts                  |orig_ip        |resp_ip       |ioc_score|ioc_source              |ioc_value                                                    |tags                                                    |
+2026-07-02 18:49:16.918 | +----------------------------------------------------------------+------------------+-----------------+--------+-----------------------+--------------------------+---------------+--------------+---------+------------------------+-------------------------------------------------------------+--------------------------------------------------------+
+2026-07-02 18:49:16.918 | |33d35f0ac6dd1e004c9455aaedc3e44569e8bf9c99d9504576cfb410c158ba18|C088d767ad90a46928|IOC Match        |High    |2026-07-02 15:32:06.857|2026-07-02 15:15:55.289999|10.30.30.24    |49.233.9.4    |100      |[varysz]                |[thesoccerarena.com, 49.233.9.4:443]                         |[CobaltStrike, ClickFix, etherhiding, injected, Polygon]|
+2026-07-02 18:49:16.918 | |1335f665dd9719febaa1b5ba549a349f178c43008c493a9e2f5596aaa31ff95f|C4a54c26cc71641988|IOC Match        |High    |2026-07-02 15:32:06.857|2026-07-02 15:16:29.613529|10.30.30.60    |146.70.87.64  |100      |[]                      |[146.70.87.64:443]                                           |[Adaptix]                                               |
+2026-07-02 18:49:16.920 | |37ffe270e7dc2f8789d9f7f0908112f445ef0dc2a4893d17de8e3beb43d02b24|Cc309ec40353942c28|IOC Match        |High    |2026-07-02 15:32:06.857|2026-07-02 15:16:05.36089 |10.20.20.178   |85.244.127.249|100      |[CarsonWilliams, varysz]|[146.70.87.64:443, ranklocally.com, https://ranklocally.com/]|[Adaptix, ClickFix, etherhiding, injected, Polygon]     |
+2026-07-02 18:49:16.921 | |cd9b5b46c09fc5403c1ed944e3b146441a7af764b466ae48730dc47252e8840b|C83b5032c02a7479da|IOC Match        |High    |2026-07-02 15:32:06.857|2026-07-02 15:17:14.332319|10.30.30.110   |38.132.122.141|100      |[varysz]                |[thesoccerarena.com, 38.132.122.141:443]                     |[Adaptix, ClickFix, etherhiding, injected, Polygon]     |
+2026-07-02 18:49:16.922 | |00a75d3ab5fc26092955200ad8ecec8d282846b19f908b51d915690cf4ba3452|C09ff3e1163a640ea8|IOC Match        |High    |2026-07-02 15:32:06.857|2026-07-02 15:17:30.586179|10.20.20.138   |49.233.9.4    |100      |[]                      |[49.233.9.4:443]                                             |[CobaltStrike]                                          |
+2026-07-02 18:49:16.922 | |daaa8ee48b37f936949a66eb38ba6001482f40d3e4461b8030e8eb0961f0996e|C95ca04f0ebab4f428|IOC Match        |High    |2026-07-02 15:32:06.857|2026-07-02 15:16:30.879731|10.10.10.49    |38.132.122.141|100      |[varysz]                |[thesoccerarena.com, 38.132.122.141:443]                     |[Adaptix, ClickFix, etherhiding, injected, Polygon]     |
+2026-07-02 18:49:16.922 | |0569cdc7c9a033f6a6f2f666322e4b1a1944b26b66b14d9328895657d1826cae|C09ff3e1163a640ea8|IOC Match        |High    |2026-07-02 15:32:06.857|2026-07-02 15:17:24.586179|10.20.20.138   |210.179.88.238|100      |[]                      |[49.233.9.4:443]                                             |[CobaltStrike]                                          |
+2026-07-02 18:49:16.922 | |1335f665dd9719febaa1b5ba549a349f178c43008c493a9e2f5596aaa31ff95f|C4a54c26cc71641988|IOC Match        |High    |2026-07-02 15:32:06.857|2026-07-02 15:16:33.613529|10.30.30.60    |146.70.87.64  |100      |[]                      |[146.70.87.64:443]                                           |[Adaptix]                                               |
+2026-07-02 18:49:16.922 | |f123ecc9ed615d6d32a2403309342e37816615425f9e8a7f05258c53c4061b27|NULL              |Port Scanning    |High    |2026-07-02 15:32:06.857|2026-07-02 15:16:46.054308|7.251.235.88   |10.30.30.175  |NULL     |[]                      |[]                                                           |[port_scan, ports_count:14]                             |
+2026-07-02 18:49:16.922 | |65ecc16955914a615cdf9cdafb315fcbc51f347b47758418b64ea55a1a6f5bf1|NULL              |Port Scanning    |Medium  |2026-07-02 15:32:06.857|2026-07-02 15:15:54.258008|192.84.199.227 |10.20.20.17   |NULL     |[]                      |[]                                                           |[port_scan, ports_count:11]                             |
+2026-07-02 18:49:16.922 | |fbd5baeb5a14013f49904f6d85c740c9826cf4531bd0c31e23dd7f59a34fe6a2|NULL              |Port Scanning    |Medium  |2026-07-02 15:32:06.857|2026-07-02 15:15:50.081318|217.199.240.176|10.30.30.248  |NULL     |[]                      |[]                                                           |[port_scan, ports_count:9]                              |
+2026-07-02 18:49:16.922 | |8fe5d984bf9b74f9457d5175bcc3e5f84357ae1c971146c46c45576a8a1afeac|NULL              |Port Scanning    |Medium  |2026-07-02 15:32:06.857|2026-07-02 15:16:15.281195|215.53.141.88  |10.20.20.231  |NULL     |[]                      |[]                                                           |[port_scan, ports_count:11]                             |
+2026-07-02 18:49:16.922 | |8a97264f590ababf6f79d6d2ee5f761486c774ef06869aa67ead78409fac5867|C4a54c26cc71641988|Data Exfiltration|High    |2026-07-02 15:32:06.857|2026-07-02 15:16:29.613529|10.30.30.60    |146.70.87.64  |NULL     |[]                      |[]                                                           |[data_exfiltration, data_exfiltration_mb:392.381828]    |
+2026-07-02 18:49:16.922 | |74376960d89b6ec38cd199ed1d93d947eda48c18674ad5a7f7967ccd0cac8193|C09ff3e1163a640ea8|Data Exfiltration|Medium  |2026-07-02 15:32:06.857|2026-07-02 15:17:24.586179|10.20.20.138   |49.233.9.4    |NULL     |[]                      |[]                                                           |[data_exfiltration, data_exfiltration_mb:183.258916]    |
+2026-07-02 18:49:16.922 | +----------------------------------------------------------------+------------------+-----------------+--------+-----------------------+--------------------------+---------------+--------------+---------+------------------------+-------------------------------------------------------------+--------------------------------------------------------+
+2026-07-02 18:49:16.922 | 

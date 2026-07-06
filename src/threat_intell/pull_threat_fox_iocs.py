@@ -36,7 +36,8 @@ def pull_iocs(api_url, api_key, days=1):
         raise ValueError("API key is required to pull IOCs from ThreatFox.")
     
     if not days or (days < 1 or days > 7):
-        raise ValueError("Days parameter is required and must be a positive integer between 1 and 7.")
+        logger.error("Days parameter is required and must be a positive integer between 1 and 7.")
+        days = 7
 
     headers = {
         "Auth-Key": api_key,

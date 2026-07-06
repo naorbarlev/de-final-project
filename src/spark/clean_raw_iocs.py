@@ -42,19 +42,25 @@ def find_new_iocs(current_df: DataFrame, clean_incremental_batch: DataFrame) -> 
         return spark.createDataFrame([], clean_incremental_batch.schema)
 
 
+
 def update_last_seen_column(current_df: DataFrame, clean_incremental_batch: DataFrame) -> DataFrame:
     '''Update the last_seen column in the current DataFrame based on the clean incremental batch.'''
-    updated_df = current_df.alias("current").join(
-        clean_incremental_batch.alias("incremental"),
+    
+    # Isolate the ID and last_seen from the new data, renaming it to avoid overlap
+    inc_df = clean_incremental_batch.select("id", F.col("last_seen").alias("inc_last_seen"))
+    
+    # Join and dynamically update the core last_seen column
+    updated_df = current_df.join(
+        inc_df,
         on="id",
         how="left"
     ).withColumn(
         "last_seen",
         F.when(
-            F.col("incremental.last_seen").isNotNull(),
-            F.greatest(F.col("current.last_seen"), F.col("incremental.last_seen"))
-        ).otherwise(F.col("current.last_seen"))
-    ).select("current.*")  # Select only columns from the current DataFrame
+            F.col("inc_last_seen").isNotNull(),
+            F.greatest(F.col("last_seen"), F.col("inc_last_seen"))
+        ).otherwise(F.col("last_seen"))
+    ).drop("inc_last_seen")
 
     return updated_df
 
@@ -119,7 +125,8 @@ if __name__ == "__main__":
     
     raw_iocs_data_frame = spark.read.json(f"s3a://{BUCKET_NAME}/{RAW_IOCS_FOLDER_NAME}/")
     
-    df_with_date = raw_iocs_data_frame.withColumn("folder_date", F.to_date(F.concat_ws("-", "year", "month", "day"), "yyyy-M-dd"))
+    # df_with_date = raw_iocs_data_frame.withColumn("folder_date", F.to_date(F.concat_ws("-", "year", "month", "day"), "yyyy-M-dd"))
+    df_with_date = raw_iocs_data_frame.withColumn("folder_date", F.make_date(F.col("year"), F.col("month"), F.col("day")))
     incremental_batch = df_with_date.filter(F.col("folder_date") > F.lit(next_date))
     
     if not incremental_batch.isEmpty():

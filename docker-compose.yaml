@@ -1,0 +1,291 @@
+version: '3.8'
+
+services:
+
+    minio:
+        container_name: minio
+        image: minio/minio:latest
+        platform: linux/amd64
+        command: server /data --console-address ":9001"
+        ports:
+            - "9001:9000"
+            - "9002:9001"
+        volumes:
+            - minio_persistent_data:/data  # Handles all your buckets automatically
+
+    zookeeper:
+        container_name: zookeeper
+        platform: linux/amd64
+        image: zookeeper:latest
+        ports:
+            - "2181:2181"
+        healthcheck:
+            test: ["CMD", "nc", "-z", "localhost", "2181"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+    
+    course-kafka:
+        container_name: course-kafka
+        image: wurstmeister/kafka:2.13-2.8.1
+        platform: linux/amd64
+        environment:
+            KAFKA_ADVERTISED_HOST_NAME: course-kafka
+            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+            KAFKA_BROKER_ID: 1
+        ports:
+            - "9092:9092"
+        depends_on:
+            zookeeper:
+                condition: service_healthy
+        healthcheck:
+            test: ["CMD", "nc", "-z", "localhost", "9092"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 40s
+
+    elasticsearch:
+        container_name: elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.13.2
+        ports:
+            - "9200:9200"
+        environment:
+            discovery.type: single-node
+        volumes:
+            - elasticsearch_persistent_data:/usr/share/elasticsearch/data
+        healthcheck:
+            test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health >/dev/null 2>&1 || exit 1"]
+            interval: 10s
+            timeout: 30s
+            retries: 20
+            start_period: 60s
+
+    alert-engine:
+        container_name: alert-engine
+        build:
+            context: .
+            dockerfile: ./src/spark/Dockerfile
+        platform: linux/amd64
+        env_file:
+            - .env
+        environment:
+            - PYTHONUNBUFFERED=1
+        command: /opt/bitnami/spark/bin/spark-submit /opt/bitnami/spark/apps/alert_engine.py
+        volumes:
+            - ./src/spark:/opt/bitnami/spark/apps
+            - ./src/utils.py:/opt/bitnami/spark/apps/utils.py
+            - ./src/logger.py:/opt/bitnami/spark/apps/logger.py
+        depends_on:
+            - course-kafka
+            - minio
+
+    corelight-producer:
+        container_name: corelight-producer
+        build:
+            context: .
+            dockerfile: ./src/sensors/Dockerfile
+        depends_on:
+            course-kafka:
+                condition: service_healthy
+            alert-engine:
+                condition: service_started
+        environment:
+            - PYTHONUNBUFFERED=1
+        env_file:
+            - .env
+        entrypoint: sh -c "sleep 30 && python corelight_logs_producer.py"
+            
+    elastic-logs:
+        container_name: elastic-logs
+        build:
+            context: .
+            dockerfile: ./src/elastic/Dockerfile.logs
+        depends_on:
+            course-kafka:
+                condition: service_healthy
+            elasticsearch:
+                condition: service_healthy
+        env_file:
+            - .env
+        entrypoint: sh -c "sleep 15 && python write_network_logs_to_elastic.py"
+    
+    elastic-alerts:
+        container_name: elastic-alerts
+        build:
+            context: .
+            dockerfile: ./src/elastic/Dockerfile.alerts
+        depends_on:
+            course-kafka:
+                condition: service_healthy
+            elasticsearch:
+                condition: service_healthy
+        env_file:
+            - .env
+        entrypoint: sh -c "sleep 15 && python write_alerts_to_elastic.py"
+
+    kafdrop:
+        container_name: kafdrop
+        image: obsidiandynamics/kafdrop:3.30.0
+        platform: linux/amd64
+        ports:
+            - "9003:9000"
+        environment:
+            - KAFKA_BROKERCONNECT=course-kafka:9092
+        depends_on:
+            course-kafka:
+                condition: service_healthy
+            
+    kibana:
+        container_name: kibana
+        image: docker.elastic.co/kibana/kibana:7.13.2
+        platform: linux/amd64
+        ports:
+            - "5601:5601"
+        environment:
+            - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+        depends_on:
+            elasticsearch:
+                condition: service_healthy
+
+    # =======================================================
+    # Always-On Spark Cluster (Bitnami Legacy 3.5.1)
+    # =======================================================
+    spark-master:
+        container_name: spark-master
+        image: bitnamilegacy/spark:3.5.1
+        environment:
+            - SPARK_MODE=master
+        ports:
+            - "8080:8080" # Spark Master Web UI
+            - "7077:7077" # Spark Cluster Submit Port
+
+    spark-worker:
+        container_name: spark-worker
+        image: bitnamilegacy/spark:3.5.1
+        environment:
+            - SPARK_MODE=worker
+            - SPARK_MASTER_URL=spark://spark-master:7077
+        ports:
+            - "8081:8081" # Spark Worker Web UI
+        depends_on:
+            - spark-master
+
+
+    postgres:
+        container_name: postgres
+        image: postgres:15
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=airflow
+            - POSTGRES_PORT=5432
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_persistent_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    airflow-init:
+        build:
+            context: .
+            dockerfile: ./src/airflow/Dockerfile.airflow
+        container_name: airflow_init
+        env_file:
+            - .env
+        environment:
+            - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+            - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
+            - AIRFLOW__CORE__FERNET_KEY=FB0o_zt4e3Ziq3LdUUO7F2Z95cvFFx16hU8jTeR1ASM=
+            - AIRFLOW__CORE__LOAD_EXAMPLES=False
+            - AIRFLOW__LOGGING__LOGGING_LEVEL=INFO
+        volumes:
+            - ./src/airflow/dags:/opt/airflow/dags
+            - airflow_logs:/opt/airflow/logs
+            - airflow_plugins:/opt/airflow/plugins
+            - ./src/threat_intell:/opt/airflow/scripts/threat_intell
+            - ./src/spark:/opt/airflow/scripts/spark
+            - ./src/utils.py:/opt/airflow/scripts/utils.py
+            - ./src/logger.py:/opt/airflow/scripts/logger.py
+        depends_on:
+            postgres:
+                condition: service_healthy
+        entrypoint: /bin/bash
+        command:
+            - -c
+            - |
+              airflow db migrate
+              airflow users create --role Admin --username airflow --password airflow --email airflow@airflow.com --firstname airflow --lastname airflow || true
+        restart: on-failure
+
+    airflow-webserver:
+        build:
+            context: .
+            dockerfile: ./src/airflow/Dockerfile.airflow
+        container_name: airflow_webserver
+        env_file:
+            - .env
+        environment:
+            - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+            - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
+            - AIRFLOW__CORE__FERNET_KEY=FB0o_zt4e3Ziq3LdUUO7F2Z95cvFFx16hU8jTeR1ASM=
+            - AIRFLOW__CORE__LOAD_EXAMPLES=False
+            - AIRFLOW__LOGGING__LOGGING_LEVEL=INFO
+        volumes:
+            - ./src/airflow/dags:/opt/airflow/dags
+            - airflow_logs:/opt/airflow/logs
+            - airflow_plugins:/opt/airflow/plugins
+            - ./src/threat_intell:/opt/airflow/scripts/threat_intell
+            - ./src/spark:/opt/airflow/scripts/spark
+            - ./src/utils.py:/opt/airflow/scripts/utils.py
+            - ./src/logger.py:/opt/airflow/scripts/logger.py
+        depends_on:
+            postgres:
+                condition: service_healthy
+            airflow-init:
+                condition: service_completed_successfully
+        command: webserver
+        ports:
+            - "8082:8080"
+        restart: always
+
+    airflow-scheduler:
+        build:
+            context: .
+            dockerfile: ./src/airflow/Dockerfile.airflow
+        container_name: airflow_scheduler
+        env_file:
+            - .env
+        environment:
+            - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+            - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
+            - AIRFLOW__CORE__FERNET_KEY=FB0o_zt4e3Ziq3LdUUO7F2Z95cvFFx16hU8jTeR1ASM=
+            - AIRFLOW__CORE__LOAD_EXAMPLES=False
+            - AIRFLOW__LOGGING__LOGGING_LEVEL=INFO
+        volumes:
+            - ./src/airflow/dags:/opt/airflow/dags
+            - airflow_logs:/opt/airflow/logs
+            - airflow_plugins:/opt/airflow/plugins
+            - ./src/threat_intell:/opt/airflow/scripts/threat_intell
+            - ./src/spark:/opt/airflow/scripts/spark
+            - ./src/utils.py:/opt/airflow/scripts/utils.py
+            - ./src/logger.py:/opt/airflow/scripts/logger.py
+        depends_on:
+            postgres:
+                condition: service_healthy
+            airflow-init:
+                condition: service_completed_successfully
+        command: scheduler
+        restart: always
+    
+
+volumes:
+    minio_persistent_data:
+    elasticsearch_persistent_data:
+    postgres_persistent_data:
+    airflow_logs:
+    airflow_plugins:
