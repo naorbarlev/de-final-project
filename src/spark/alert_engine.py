@@ -14,7 +14,7 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from logger import get_logger
-from schema import ALERT_SCHEMA, CONN_SCHEMA, HTTP_SCHEMA, DNS_SCHEMA, WIDE_SCHEMA
+from schema import WIDE_SCHEMA
 
 dotenv.load_dotenv()
 logger = get_logger(__name__)
