@@ -607,18 +607,23 @@ def main():
     ]
     try:
         attack_events_sent = 0
+        attack_counter_reset_at = time.monotonic() + (15 * 60)
         logger.info("Waiting 20 seconds before sending logs...")
         time.sleep(20)
         logger.info("Attack events should appear in Elasticsearch now!")
         while True:
-            
             for segment in segments:
                 segment.send_sample_batch()
-                    
+
             if attack_events_sent < args.max_attack_events and random.randint(1, 100) <= args.attack_probability:
                 send_random_attack_scenario(segments)
                 attack_events_sent += 1
-            
+
+            if time.monotonic() >= attack_counter_reset_at:
+                attack_events_sent = 0
+                attack_counter_reset_at = time.monotonic() + (15 * 60)
+                logger.info("Resetting attack event counter for the next 15-minute window.")
+
             producer.flush()
             time.sleep(get_random_log_interval())
     finally:

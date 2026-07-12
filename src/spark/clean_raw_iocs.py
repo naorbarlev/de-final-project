@@ -115,17 +115,22 @@ if __name__ == "__main__":
     )
     
     last_processed_date = read_watermark_date(client, BUCKET_NAME, f"{CLEAN_IOCS_FOLDER_NAME}/{last_processed_date_object_name}")
+    # Determine the write mode based on whether there's a last processed date
     write_mode = "append" if last_processed_date else "overwrite"
     logger.info(f"Last processed date: {last_processed_date}, Write mode: {write_mode}")
+    
     if not last_processed_date:
         logger.info("No watermark found. Assuming this is the first run. Processing all available data.")
         last_processed_date = datetime(1970, 1, 1)  # Set to epoch start for first run
 
+    # Determine the next date to process based on the last processed date
     next_date = last_processed_date + timedelta(days=1) if last_processed_date else None
     
+    # Read the raw IOCs data from MinIO
     raw_iocs_data_frame = spark.read.json(f"s3a://{BUCKET_NAME}/{RAW_IOCS_FOLDER_NAME}/")
     
-    # df_with_date = raw_iocs_data_frame.withColumn("folder_date", F.to_date(F.concat_ws("-", "year", "month", "day"), "yyyy-M-dd"))
+    # Add a new column to the DataFrame that represents the date of each record based on its year, month, and day fields.
+    # Then filter the DataFrame to only include records that are newer than the next date to process.
     df_with_date = raw_iocs_data_frame.withColumn("folder_date", F.make_date(F.col("year"), F.col("month"), F.col("day")))
     incremental_batch = df_with_date.filter(F.col("folder_date") > F.lit(next_date))
     

@@ -3,8 +3,6 @@ from minio.error import S3Error
 import io
 import dotenv
 import os
-import logging
-import sys
 from logger import get_logger
 
 logger = get_logger(__name__)

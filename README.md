@@ -6,12 +6,12 @@ This project implements an end-to-end security analytics platform that ingests n
 
 The pipeline is designed to:
 
-- ingest simulated network logs from a producer service,
-- stream events through Kafka,
-- detect security alerts with Spark-based logic,
-- write logs and alerts into Elasticsearch,
-- store IoCs (indicators of compromise) in MinIO,
-- orchestrate IoC collection and cleaning with Airflow.
+- ingest simulated network logs from a producer service
+- stream events through Kafka
+- detect security alerts with Spark-based logic
+- write logs and alerts into Elasticsearch
+- store IoCs (indicators of compromise) in MinIO
+- orchestrate IoC collection and cleaning with Airflow
 
 ## Architecture
 

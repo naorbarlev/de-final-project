@@ -45,7 +45,7 @@ def pull_iocs(api_url, api_key, days=1):
     }
     payload = {
         "query": "get_iocs",
-        "days": int(days)  # Convert to negative for the API
+        "days": int(days)
     }
     response = requests.post(api_url, headers=headers, json=payload)
     response.raise_for_status()  # Raise an exception for HTTP errors

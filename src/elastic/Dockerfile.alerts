@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY src/elastic/requirements.txt ./
 COPY src/logger.py ./
+COPY src/utils.py ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 
