@@ -104,36 +104,6 @@ mapping = {
 es = Elasticsearch([{'host': ELASTICSEARCH_HOST, 'port': 9200, 'scheme': 'http'}])
 es_index = os.getenv('ELASTICSEARCH_NETWORK_LOGS_INDEX')
 
-
-# def wait_for_elasticsearch(es_client, retries=30, delay=5):
-#     """Wait until Elasticsearch responds to ping or raise after retries."""
-#     import time
-
-#     for attempt in range(1, retries + 1):
-#         try:
-#             if es_client.ping():
-#                 logger.info(f"Elasticsearch reachable (attempt {attempt})")
-#                 return True
-#         except Exception as e:
-#             logger.error(f"Elasticsearch ping failed (attempt {attempt}): {e}")
-#         time.sleep(delay)
-#     raise RuntimeError("Elasticsearch not reachable after retries")
-
-
-# def consume_from_kafka():
-#     logger.info("Consuming data from Kafka...")
-#     for message in consumer:
-#         log = message.value
-#         es.index(index=es_index, body=log)
-
-
-# def es_index_get_or_create(index_name, mapping):
-#     if not es.indices.exists(index=index_name):
-        
-#         es.indices.create(index=index_name, body=mapping)
-#         logger.info(f"Created Elasticsearch index: {index_name} with custom mapping")
-
-
 if __name__ == "__main__":
     # Ensure Elasticsearch is up before proceeding
     logger.info(f"Waiting for Elasticsearch at {ELASTICSEARCH_HOST}:9200...")
