@@ -245,12 +245,12 @@ if __name__ == "__main__":
     hadoop_conf = sc._jsc.hadoopConfiguration()
 
     # Core MinIO server connection parameters
-    hadoop_conf.set("fs.s3a.endpoint", MINIO_ENDPOINT) # Update with your MinIO host & API port
+    hadoop_conf.set("fs.s3a.endpoint", MINIO_ENDPOINT)
     hadoop_conf.set("fs.s3a.access.key", MINIO_ACCESS_KEY)
     hadoop_conf.set("fs.s3a.secret.key", MINIO_SECRET_KEY)
 
     hadoop_conf.set("fs.s3a.path.style.access", "true")
-    hadoop_conf.set("fs.s3a.connection.ssl.enabled", "false") # Set true if your MinIO has SSL certificates
+    hadoop_conf.set("fs.s3a.connection.ssl.enabled", "false")
     hadoop_conf.set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
     
 
