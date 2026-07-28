@@ -150,6 +150,7 @@ if __name__ == "__main__":
         
         # Save the snapshot replacement data
         union_df.write.mode(write_mode).parquet(f"s3a://{BUCKET_NAME}/{CLEAN_IOCS_PARQUET_FILES}/")
+        # union_df.coalesce("last_seen").write.mode(write_mode).partitionBy("last_seen").parquet(f"s3a://{BUCKET_NAME}/{CLEAN_IOCS_PARQUET_FILES}/")
         
         # Find the maximum date present in this batch processing run
         max_date = incremental_batch.select(F.max("folder_date")).collect()[0][0]

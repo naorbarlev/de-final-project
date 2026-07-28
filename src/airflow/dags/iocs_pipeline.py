@@ -38,7 +38,6 @@ with DAG(
     clean_data_and_save = SparkSubmitOperator(
         task_id="clean_data_and_save",
         application="/opt/airflow/scripts/spark/clean_raw_iocs.py",
-        # Uses the environment variable connection we defined in docker-compose
         conn_id="spark_default",
         packages="org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262",
         conf={

@@ -286,7 +286,6 @@ if __name__ == "__main__":
 
         logger.info("Parsed network stream into a DataFrame")
     
-
         ioc_match_alert_df = ioc_match_detection(parsed_df, ioc_df)
         port_scan_alert_df = port_scan_detection(parsed_df)
         data_exfiltration_alert_df = data_exfiltration_detection(parsed_df)
@@ -298,12 +297,11 @@ if __name__ == "__main__":
         )
     
         # Write stream to Kafka
-        # REMOVE IN PRODUCTION, USE A FIXED CHECKPOINT PATH
         query = kafka_output_df.writeStream \
             .format("kafka") \
             .option("kafka.bootstrap.servers", KAFKA_BROKER) \
             .option("topic", ALERTS_TOPIC) \
-            .option("checkpointLocation", f"s3a://{BUCKET_NAME}/checkpoints/kafka_logs_{uuid.uuid4()}") \
+            .option("checkpointLocation", f"s3a://{BUCKET_NAME}/checkpoints/kafka_logs") \
             .start()
 
         

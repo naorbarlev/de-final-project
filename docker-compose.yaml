@@ -5,7 +5,7 @@ services:
     minio:
         container_name: minio
         image: minio/minio:latest
-        platform: linux/amd64
+        # platform: linux/amd64
         command: server /data --console-address ":9001"
         ports:
             - "9001:9000"
@@ -33,6 +33,8 @@ services:
             KAFKA_ADVERTISED_HOST_NAME: course-kafka
             KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
             KAFKA_BROKER_ID: 1
+            KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+            KAFKA_CREATE_TOPICS: "${NETWORK_LOGS_TOPIC}:3:1, ${ALERTS_TOPIC}:1:1"
         ports:
             - "9092:9092"
         depends_on:

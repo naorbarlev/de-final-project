@@ -13,6 +13,7 @@ import dotenv
 from faker import Faker
 from kafka import KafkaProducer
 
+
 SRC_ROOT = Path(__file__).resolve().parents[1]
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
@@ -41,13 +42,15 @@ class CorelightLogGenerator:
         segment_name,
         cidr,
         kafka_topic,
-        producer
+        producer,
+        partition_id
     ):
         """Create a generator for one network segment and Kafka destination."""
         self.segment_name = segment_name
         self.network = ip_network(cidr)
         self.kafka_topic = kafka_topic
         self.producer = producer
+        self.partition_id = partition_id
 
     def generate_conn_log(self, flow=None):
         """Build one Corelight conn log record for the provided or generated flow."""
@@ -169,9 +172,9 @@ class CorelightLogGenerator:
             "resp_mime_types": [fake.mime_type()] if response_body_len > 0 else [],
         }
 
-    def send_log(self, log_record):
+    def send_log(self,log_record):
         """Send a generated Corelight log record to the configured Kafka topic."""
-        self.producer.send(self.kafka_topic, value=log_record)
+        self.producer.send(self.kafka_topic, value=log_record, partition=self.partition_id)
 
     def send_sample_batch(self):
         """Send a small batch with linked conn/http records plus one dns record."""
@@ -532,11 +535,13 @@ class CorelightLogGenerator:
         }[status_code]
 
 
+
 def build_producer():
     """Create a Kafka producer that serializes log records as JSON bytes."""
     return KafkaProducer(
         bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
         value_serializer=lambda record: json.dumps(record).encode("utf-8"),
+        key_serializer=lambda key: key.encode("utf-8") if isinstance(key, str) else None,
     )
 
 
@@ -576,6 +581,7 @@ def send_random_attack_scenario(segments):
     logger.info(f"Sending attack scenario: {scenario.__name__}")
     scenario()
 
+
 def main():
     """Create three segment generators and stream sample logs to Kafka."""
     logger.info("Starting Corelight Kafka demo log generator...")
@@ -590,21 +596,26 @@ def main():
             "corp-users",
             "10.10.10.0/24",
             NETWORK_LOGS_TOPIC,
-            producer
+            producer,
+            partition_id=0
         ),
         CorelightLogGenerator(
             "datacenter",
             "10.20.20.0/24",
             NETWORK_LOGS_TOPIC,
-            producer
+            producer,
+            partition_id=1
         ),
         CorelightLogGenerator(
             "dmz",
             "10.30.30.0/24",
             NETWORK_LOGS_TOPIC,
-            producer
+            producer,
+            partition_id=2
         ),
     ]
+    
+    
     try:
         attack_events_sent = 0
         attack_counter_reset_at = time.monotonic() + (15 * 60)
