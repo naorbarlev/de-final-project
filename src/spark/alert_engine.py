@@ -157,7 +157,6 @@ def preper_ioc_df(ioc_df: DataFrame) -> DataFrame:
 
 def ioc_match_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
     logger.info("Starting IOC match detection")
-    # normalized_ioc_df = preper_ioc_df(ioc_df)
 
     event_df = (
         batch_df
@@ -174,19 +173,23 @@ def ioc_match_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
         .dropDuplicatesWithinWatermark()
     )
 
-    match_condition = (
-        (F.col("resp_ip") == F.col("ioc_for_match"))
-        | (F.col("query") == F.col("ioc_for_match"))
-        | (F.col("answer") == F.col("ioc_for_match"))
-        | (F.col("host") == F.col("ioc_for_match"))
-    )
+    # Unpivot the 4 candidate fields into (match_value) rows so the join
+    # becomes a single equi-join instead of a 4-way OR broadcast nested-loop join.
+    candidates_df = event_df.select(
+        "uid", "ts", "orig_ip", "resp_ip", "query", "answer", "host",
+        F.explode(F.array(
+            F.col("resp_ip"),
+            F.col("query"),
+            F.col("answer"),
+            F.col("host")
+        )).alias("match_value")
+    ).filter(F.col("match_value").isNotNull())
 
-    matched_df = event_df.alias("events").join(
-        ioc_df.alias("iocs"),
-        on=match_condition,
+    matched_df = candidates_df.alias("events").join(
+        F.broadcast(ioc_df).alias("iocs"),
+        on=F.col("events.match_value") == F.col("iocs.ioc_for_match"),
         how="inner"
     )
-
 
     aggregated_df = matched_df.groupBy(
         F.window(F.col("ts"), "5 seconds"),
@@ -203,7 +206,6 @@ def ioc_match_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
     )
 
     aggregated_df = aggregated_df.withColumn("alert_type", F.lit("IOC Match"))
-    
     aggregated_df = aggregated_df.withColumn(
         "severity",
         F.when(F.col("is_compromised"), F.lit("High")).otherwise(F.lit("Medium"))
@@ -228,6 +230,79 @@ def ioc_match_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
         "ioc_value",
         "tags"
     )
+# def ioc_match_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
+#     logger.info("Starting IOC match detection")
+#     # normalized_ioc_df = preper_ioc_df(ioc_df)
+
+#     event_df = (
+#         batch_df
+#         .withColumn("answer", F.explode_outer(F.col("answers")))
+#         .select(
+#             F.col("uid"),
+#             F.col("ts"),
+#             F.col("id_orig_h").alias("orig_ip"),
+#             F.col("id_resp_h").alias("resp_ip"),
+#             F.col("query"),
+#             F.col("answer"),
+#             F.col("host")
+#         )
+#         .dropDuplicatesWithinWatermark()
+#     )
+
+#     match_condition = (
+#         (F.col("resp_ip") == F.col("ioc_for_match"))
+#         | (F.col("query") == F.col("ioc_for_match"))
+#         | (F.col("answer") == F.col("ioc_for_match"))
+#         | (F.col("host") == F.col("ioc_for_match"))
+#     )
+
+#     matched_df = event_df.alias("events").join(
+#         ioc_df.alias("iocs"),
+#         on=match_condition,
+#         how="inner"
+#     )
+
+
+#     aggregated_df = matched_df.groupBy(
+#         F.window(F.col("ts"), "5 seconds"),
+#         F.col("uid")
+#     ).agg(
+#         F.first("resp_ip").alias("resp_ip"),
+#         F.first("orig_ip").alias("orig_ip"),
+#         F.first("ts").alias("event_ts"),
+#         F.array_distinct(F.flatten(F.collect_list(F.coalesce(F.col("iocs.tags"), F.array())))).alias("tags"),
+#         F.collect_set("ioc").alias("ioc_value"),
+#         F.collect_set("reporter").alias("ioc_source"),
+#         F.max("confidence_level").alias("ioc_score"),
+#         F.max(F.when(F.col("is_compromised"), 1).otherwise(0)).cast(T.BooleanType()).alias("is_compromised")
+#     )
+
+#     aggregated_df = aggregated_df.withColumn("alert_type", F.lit("IOC Match"))
+    
+#     aggregated_df = aggregated_df.withColumn(
+#         "severity",
+#         F.when(F.col("is_compromised"), F.lit("High")).otherwise(F.lit("Medium"))
+#     )
+#     aggregated_df = aggregated_df.withColumn("alert_ts", F.current_timestamp())
+#     aggregated_df = aggregated_df.withColumn(
+#         "alert_id",
+#         F.sha2(F.concat(F.col("alert_ts"), F.col("uid"), F.col("resp_ip")), 256)
+#     )
+
+#     return aggregated_df.select(
+#         "alert_id",
+#         F.col("uid").alias("log_uid"),
+#         "alert_type",
+#         "severity",
+#         "alert_ts",
+#         "event_ts",
+#         "orig_ip",
+#         "resp_ip",
+#         "ioc_score",
+#         "ioc_source",
+#         "ioc_value",
+#         "tags"
+#     )
 
 
 def load_ioc_db(spark: SparkSession) -> DataFrame:
@@ -237,11 +312,13 @@ def load_ioc_db(spark: SparkSession) -> DataFrame:
 if __name__ == "__main__":
     # Initialize Spark Session
     spark = SparkSession.builder \
-        .appName("KafkaToKafkaStreaming") \
-        .config("spark.sql.streaming.asyncProgressTrackingEnabled", "true") \
-        .config("spark.sql.streaming.stateStore.providerClass", "org.apache.spark.sql.execution.streaming.state.RocksDBStateStoreProvider") \
-        .config("spark.sql.streaming.minBatchesToRetain", "10") \
-        .getOrCreate()
+    .appName("KafkaToKafkaStreaming") \
+    .config("spark.local.dir", "/opt/bitnami/spark/rocksdb-tmp") \
+    .config("spark.sql.streaming.stateStore.providerClass",
+            "org.apache.spark.sql.execution.streaming.state.RocksDBStateStoreProvider") \
+    .config("spark.sql.streaming.stateStore.rocksdb.changelogCheckpointing.enabled", "true") \
+    .config("spark.sql.streaming.minBatchesToRetain", "10") \
+    .getOrCreate()
         
     sc = spark.sparkContext
     sc.setLogLevel("ERROR")
@@ -260,7 +337,7 @@ if __name__ == "__main__":
     hadoop_conf.set("fs.s3a.threads.max", "64")
     hadoop_conf.set("fs.s3a.fast.upload", "true")
     hadoop_conf.set("fs.s3a.fast.upload.buffer", "bytebuffer")
-    hadoop_conf.set("fs.s3a.change.detection.version.required", "false")  # skip extra version-check HEAD calls, MinIO doesn't need this
+    hadoop_conf.set("fs.s3a.change.detection.version.required", "false")
     hadoop_conf.set("fs.s3a.attempts.maximum", "3")
     
     spark.conf.set("spark.sql.shuffle.partitions", "8")
@@ -317,7 +394,7 @@ if __name__ == "__main__":
             .option("kafka.bootstrap.servers", KAFKA_BROKER) \
             .option("topic", ALERTS_TOPIC) \
             .option("checkpointLocation", "/opt/bitnami/spark/checkpoints") \
-            .trigger(processingTime="5 seconds") \
+            .trigger(processingTime="15 seconds") \
             .start()
 
         # .option("checkpointLocation", "/opt/bitnami/spark/checkpoints" ) \ f"s3a://{BUCKET_NAME}/checkpoints/kafka_logs"
