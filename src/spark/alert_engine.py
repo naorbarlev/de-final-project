@@ -157,7 +157,7 @@ def preper_ioc_df(ioc_df: DataFrame) -> DataFrame:
 
 def ioc_match_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
     logger.info("Starting IOC match detection")
-    normalized_ioc_df = preper_ioc_df(ioc_df)
+    # normalized_ioc_df = preper_ioc_df(ioc_df)
 
     event_df = (
         batch_df
@@ -182,14 +182,14 @@ def ioc_match_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
     )
 
     matched_df = event_df.alias("events").join(
-        normalized_ioc_df.alias("iocs"),
+        ioc_df.alias("iocs"),
         on=match_condition,
         how="inner"
     )
 
 
     aggregated_df = matched_df.groupBy(
-        F.window(F.col("ts"), "30 seconds"),
+        F.window(F.col("ts"), "5 seconds"),
         F.col("uid")
     ).agg(
         F.first("resp_ip").alias("resp_ip"),
@@ -238,6 +238,9 @@ if __name__ == "__main__":
     # Initialize Spark Session
     spark = SparkSession.builder \
         .appName("KafkaToKafkaStreaming") \
+        .config("spark.sql.streaming.asyncProgressTrackingEnabled", "true") \
+        .config("spark.sql.streaming.stateStore.providerClass", "org.apache.spark.sql.execution.streaming.state.RocksDBStateStoreProvider") \
+        .config("spark.sql.streaming.minBatchesToRetain", "10") \
         .getOrCreate()
         
     sc = spark.sparkContext
@@ -253,10 +256,21 @@ if __name__ == "__main__":
     hadoop_conf.set("fs.s3a.connection.ssl.enabled", "false")
     hadoop_conf.set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
     
+    hadoop_conf.set("fs.s3a.connection.maximum", "200")
+    hadoop_conf.set("fs.s3a.threads.max", "64")
+    hadoop_conf.set("fs.s3a.fast.upload", "true")
+    hadoop_conf.set("fs.s3a.fast.upload.buffer", "bytebuffer")
+    hadoop_conf.set("fs.s3a.change.detection.version.required", "false")  # skip extra version-check HEAD calls, MinIO doesn't need this
+    hadoop_conf.set("fs.s3a.attempts.maximum", "3")
+    
+    spark.conf.set("spark.sql.shuffle.partitions", "8")
+    
 
     while True:
         logger.info("Loading IOC database from MinIO")
         ioc_df = load_ioc_db(spark=spark)
+        ioc_df = preper_ioc_df(ioc_df)
+        ioc_df = F.broadcast(ioc_df)
         
         # Read stream from Kafka
         df = spark.readStream \
@@ -265,6 +279,7 @@ if __name__ == "__main__":
             .option("subscribe", NETWORK_LOGS_TOPIC) \
             .option("startingOffsets", "latest") \
             .option("failOnDataLoss", "false") \
+            .option("maxOffsetsPerTrigger", 50000) \
             .load()
 
         parsed_df = df \
@@ -282,7 +297,7 @@ if __name__ == "__main__":
         })
     
         
-        parsed_df = parsed_df.withWatermark("ts", "30 seconds")
+        parsed_df = parsed_df.withWatermark("ts", "5 seconds")
 
         logger.info("Parsed network stream into a DataFrame")
     
@@ -301,10 +316,11 @@ if __name__ == "__main__":
             .format("kafka") \
             .option("kafka.bootstrap.servers", KAFKA_BROKER) \
             .option("topic", ALERTS_TOPIC) \
-            .option("checkpointLocation", f"s3a://{BUCKET_NAME}/checkpoints/kafka_logs") \
+            .option("checkpointLocation", "/opt/bitnami/spark/checkpoints") \
+            .trigger(processingTime="5 seconds") \
             .start()
 
-        
+        # .option("checkpointLocation", "/opt/bitnami/spark/checkpoints" ) \ f"s3a://{BUCKET_NAME}/checkpoints/kafka_logs"
         logger.info("Spark streaming query started. Will reload IOCs in 3 hours.")
         query.awaitTermination(timeout=3 * 60 * 60)
         

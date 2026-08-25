@@ -3,3 +3,4 @@ requests
 minio
 apache-airflow-providers-apache-spark
 pyspark==3.5.1
+kafka-python

@@ -41,8 +41,10 @@ with DAG(
         conn_id="spark_default",
         packages="org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262",
         conf={
-            "spark.executor.memory": "1g",
-            "spark.driver.memory": "1g"
+            "spark.cores.max": "1",
+            "spark.executor.cores": "1",
+            "spark.executor.memory": "512m",
+            "spark.driver.memory": "512m",
         }
     )
 
