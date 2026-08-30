@@ -143,7 +143,7 @@ def data_exfiltration_detection(batch_df: DataFrame) -> DataFrame:
     )
 
 
-def preper_ioc_df(ioc_df: DataFrame) -> DataFrame:
+def prepare_ioc_df(ioc_df: DataFrame) -> DataFrame:
      # Normalize IOC matching values so we can match by IP, domain, and answer text.
     normalized_ioc_df = ioc_df.withColumn(
         "ioc_for_match",
@@ -254,62 +254,62 @@ if __name__ == "__main__":
     
     spark.conf.set("spark.sql.shuffle.partitions", "8")
 
-    # while True:
-    logger.info("Loading IOC database from MinIO")
-    ioc_df = load_ioc_db(spark=spark)
-    ioc_df = preper_ioc_df(ioc_df)
-    ioc_df = F.broadcast(ioc_df)
-    
-    # Read stream from Kafka
-    df = spark.readStream \
-        .format("kafka") \
-        .option("kafka.bootstrap.servers", KAFKA_BROKER) \
-        .option("subscribe", NETWORK_LOGS_TOPIC) \
-        .option("startingOffsets", "latest") \
-        .option("failOnDataLoss", "false") \
-        .option("maxOffsetsPerTrigger", 50000) \
-        .load()
-
-    parsed_df = df \
-        .selectExpr("CAST(value AS STRING) as json_str") \
-        .select(F.from_json(
-            F.col("json_str"), 
-            WIDE_SCHEMA,
-            options={"timestampFormat": "yyyy-MM-dd'T'HH:mm:ss.SSSSSSX"}
-        ).alias("data")) \
-        .select("data.*").withColumnsRenamed({
-        "id.orig_h": "id_orig_h",
-        "id.orig_p": "id_orig_p",
-        "id.resp_h": "id_resp_h",
-        "id.resp_p": "id_resp_p"
-    })
-
-    
-    parsed_df = parsed_df.withWatermark("ts", "5 seconds")
-
-    logger.info("Parsed network stream into a DataFrame")
-
-    ioc_match_alert_df = ioc_match_detection(parsed_df, ioc_df)
-    port_scan_alert_df = port_scan_detection(parsed_df)
-    data_exfiltration_alert_df = data_exfiltration_detection(parsed_df)
-    
-    alerts_df = ioc_match_alert_df.unionByName(port_scan_alert_df).unionByName(data_exfiltration_alert_df)
-
-    kafka_output_df = alerts_df.select(
-        F.to_json(F.struct("*")).alias("value")
-    )
-
-    # Write stream to Kafka
-    query = kafka_output_df.writeStream \
-        .format("kafka") \
-        .option("kafka.bootstrap.servers", KAFKA_BROKER) \
-        .option("topic", ALERTS_TOPIC) \
-        .option("checkpointLocation", "/opt/bitnami/spark/checkpoints") \
-        .trigger(processingTime="15 seconds") \
-        .start()
-
-    logger.info("Spark streaming query started. Will reload IOCs in 3 hours.")
-    # query.awaitTermination(timeout=3 * 60 * 60)
+    while True:
+        logger.info("Loading IOC database from MinIO")
+        ioc_df = load_ioc_db(spark=spark)
+        ioc_df = prepare_ioc_df(ioc_df)
+        ioc_df = F.broadcast(ioc_df)
         
-        # logger.info("3 hours passed. Stopping query to refresh IOC database...")
-    query.awaitTermination()
+        # Read stream from Kafka
+        df = spark.readStream \
+            .format("kafka") \
+            .option("kafka.bootstrap.servers", KAFKA_BROKER) \
+            .option("subscribe", NETWORK_LOGS_TOPIC) \
+            .option("startingOffsets", "latest") \
+            .option("failOnDataLoss", "false") \
+            .option("maxOffsetsPerTrigger", 50000) \
+            .load()
+
+        parsed_df = df \
+            .selectExpr("CAST(value AS STRING) as json_str") \
+            .select(F.from_json(
+                F.col("json_str"), 
+                WIDE_SCHEMA,
+                options={"timestampFormat": "yyyy-MM-dd'T'HH:mm:ss.SSSSSSX"}
+            ).alias("data")) \
+            .select("data.*").withColumnsRenamed({
+            "id.orig_h": "id_orig_h",
+            "id.orig_p": "id_orig_p",
+            "id.resp_h": "id_resp_h",
+            "id.resp_p": "id_resp_p"
+        })
+
+        
+        parsed_df = parsed_df.withWatermark("ts", "5 seconds")
+
+        logger.info("Parsed network stream into a DataFrame")
+
+        ioc_match_alert_df = ioc_match_detection(parsed_df, ioc_df)
+        port_scan_alert_df = port_scan_detection(parsed_df)
+        data_exfiltration_alert_df = data_exfiltration_detection(parsed_df)
+        
+        alerts_df = ioc_match_alert_df.unionByName(port_scan_alert_df).unionByName(data_exfiltration_alert_df)
+
+        kafka_output_df = alerts_df.select(
+            F.to_json(F.struct("*")).alias("value")
+        )
+
+        # Write stream to Kafka
+        query = kafka_output_df.writeStream \
+            .format("kafka") \
+            .option("kafka.bootstrap.servers", KAFKA_BROKER) \
+            .option("topic", ALERTS_TOPIC) \
+            .option("checkpointLocation", "/opt/bitnami/spark/checkpoints") \
+            .trigger(processingTime="15 seconds") \
+            .start()
+
+        logger.info("Spark streaming query started. Will reload IOCs in 3 hours.")
+        query.awaitTermination(timeout=3 * 60 * 60)
+            
+        logger.info("3 hours passed. Stopping query to refresh IOC database...")
+        query.stop()
