@@ -1,8 +1,6 @@
 
 from pathlib import Path
 import sys
-from datetime import datetime, timedelta
-import uuid
 from pyspark.sql import DataFrame, SparkSession
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
@@ -174,7 +172,7 @@ def ioc_match_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
     )
 
     # Unpivot the 4 candidate fields into (match_value) rows so the join
-    # becomes a single equi-join instead of a 4-way OR broadcast nested-loop join.
+    # becomes a single equi-join
     candidates_df = event_df.select(
         "uid", "ts", "orig_ip", "resp_ip", "query", "answer", "host",
         F.explode(F.array(
@@ -230,79 +228,6 @@ def ioc_match_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
         "ioc_value",
         "tags"
     )
-# def ioc_match_detection(batch_df: DataFrame, ioc_df: DataFrame) -> DataFrame:
-#     logger.info("Starting IOC match detection")
-#     # normalized_ioc_df = preper_ioc_df(ioc_df)
-
-#     event_df = (
-#         batch_df
-#         .withColumn("answer", F.explode_outer(F.col("answers")))
-#         .select(
-#             F.col("uid"),
-#             F.col("ts"),
-#             F.col("id_orig_h").alias("orig_ip"),
-#             F.col("id_resp_h").alias("resp_ip"),
-#             F.col("query"),
-#             F.col("answer"),
-#             F.col("host")
-#         )
-#         .dropDuplicatesWithinWatermark()
-#     )
-
-#     match_condition = (
-#         (F.col("resp_ip") == F.col("ioc_for_match"))
-#         | (F.col("query") == F.col("ioc_for_match"))
-#         | (F.col("answer") == F.col("ioc_for_match"))
-#         | (F.col("host") == F.col("ioc_for_match"))
-#     )
-
-#     matched_df = event_df.alias("events").join(
-#         ioc_df.alias("iocs"),
-#         on=match_condition,
-#         how="inner"
-#     )
-
-
-#     aggregated_df = matched_df.groupBy(
-#         F.window(F.col("ts"), "5 seconds"),
-#         F.col("uid")
-#     ).agg(
-#         F.first("resp_ip").alias("resp_ip"),
-#         F.first("orig_ip").alias("orig_ip"),
-#         F.first("ts").alias("event_ts"),
-#         F.array_distinct(F.flatten(F.collect_list(F.coalesce(F.col("iocs.tags"), F.array())))).alias("tags"),
-#         F.collect_set("ioc").alias("ioc_value"),
-#         F.collect_set("reporter").alias("ioc_source"),
-#         F.max("confidence_level").alias("ioc_score"),
-#         F.max(F.when(F.col("is_compromised"), 1).otherwise(0)).cast(T.BooleanType()).alias("is_compromised")
-#     )
-
-#     aggregated_df = aggregated_df.withColumn("alert_type", F.lit("IOC Match"))
-    
-#     aggregated_df = aggregated_df.withColumn(
-#         "severity",
-#         F.when(F.col("is_compromised"), F.lit("High")).otherwise(F.lit("Medium"))
-#     )
-#     aggregated_df = aggregated_df.withColumn("alert_ts", F.current_timestamp())
-#     aggregated_df = aggregated_df.withColumn(
-#         "alert_id",
-#         F.sha2(F.concat(F.col("alert_ts"), F.col("uid"), F.col("resp_ip")), 256)
-#     )
-
-#     return aggregated_df.select(
-#         "alert_id",
-#         F.col("uid").alias("log_uid"),
-#         "alert_type",
-#         "severity",
-#         "alert_ts",
-#         "event_ts",
-#         "orig_ip",
-#         "resp_ip",
-#         "ioc_score",
-#         "ioc_source",
-#         "ioc_value",
-#         "tags"
-#     )
 
 
 def load_ioc_db(spark: SparkSession) -> DataFrame:
@@ -316,7 +241,6 @@ if __name__ == "__main__":
     .getOrCreate()
         
     sc = spark.sparkContext
-    sc.setLogLevel("ERROR")
     hadoop_conf = sc._jsc.hadoopConfiguration()
 
     # Core MinIO server connection parameters
@@ -330,63 +254,62 @@ if __name__ == "__main__":
     
     spark.conf.set("spark.sql.shuffle.partitions", "8")
 
-    while True:
-        logger.info("Loading IOC database from MinIO")
-        ioc_df = load_ioc_db(spark=spark)
-        ioc_df = preper_ioc_df(ioc_df)
-        ioc_df = F.broadcast(ioc_df)
-        
-        # Read stream from Kafka
-        df = spark.readStream \
-            .format("kafka") \
-            .option("kafka.bootstrap.servers", KAFKA_BROKER) \
-            .option("subscribe", NETWORK_LOGS_TOPIC) \
-            .option("startingOffsets", "latest") \
-            .option("failOnDataLoss", "false") \
-            .option("maxOffsetsPerTrigger", 50000) \
-            .load()
+    # while True:
+    logger.info("Loading IOC database from MinIO")
+    ioc_df = load_ioc_db(spark=spark)
+    ioc_df = preper_ioc_df(ioc_df)
+    ioc_df = F.broadcast(ioc_df)
+    
+    # Read stream from Kafka
+    df = spark.readStream \
+        .format("kafka") \
+        .option("kafka.bootstrap.servers", KAFKA_BROKER) \
+        .option("subscribe", NETWORK_LOGS_TOPIC) \
+        .option("startingOffsets", "latest") \
+        .option("failOnDataLoss", "false") \
+        .option("maxOffsetsPerTrigger", 50000) \
+        .load()
 
-        parsed_df = df \
-            .selectExpr("CAST(value AS STRING) as json_str") \
-            .select(F.from_json(
-                F.col("json_str"), 
-                WIDE_SCHEMA,
-                options={"timestampFormat": "yyyy-MM-dd'T'HH:mm:ss.SSSSSSX"}
-            ).alias("data")) \
-            .select("data.*").withColumnsRenamed({
-            "id.orig_h": "id_orig_h",
-            "id.orig_p": "id_orig_p",
-            "id.resp_h": "id_resp_h",
-            "id.resp_p": "id_resp_p"
-        })
-    
-        
-        parsed_df = parsed_df.withWatermark("ts", "5 seconds")
+    parsed_df = df \
+        .selectExpr("CAST(value AS STRING) as json_str") \
+        .select(F.from_json(
+            F.col("json_str"), 
+            WIDE_SCHEMA,
+            options={"timestampFormat": "yyyy-MM-dd'T'HH:mm:ss.SSSSSSX"}
+        ).alias("data")) \
+        .select("data.*").withColumnsRenamed({
+        "id.orig_h": "id_orig_h",
+        "id.orig_p": "id_orig_p",
+        "id.resp_h": "id_resp_h",
+        "id.resp_p": "id_resp_p"
+    })
 
-        logger.info("Parsed network stream into a DataFrame")
     
-        ioc_match_alert_df = ioc_match_detection(parsed_df, ioc_df)
-        port_scan_alert_df = port_scan_detection(parsed_df)
-        data_exfiltration_alert_df = data_exfiltration_detection(parsed_df)
-        
-        alerts_df = ioc_match_alert_df.unionByName(port_scan_alert_df).unionByName(data_exfiltration_alert_df)
-    
-        kafka_output_df = alerts_df.select(
-            F.to_json(F.struct("*")).alias("value")
-        )
-    
-        # Write stream to Kafka
-        query = kafka_output_df.writeStream \
-            .format("kafka") \
-            .option("kafka.bootstrap.servers", KAFKA_BROKER) \
-            .option("topic", ALERTS_TOPIC) \
-            .option("checkpointLocation", "/opt/bitnami/spark/checkpoints") \
-            .trigger(processingTime="15 seconds") \
-            .start()
+    parsed_df = parsed_df.withWatermark("ts", "5 seconds")
 
-        # .option("checkpointLocation", "/opt/bitnami/spark/checkpoints" ) \ f"s3a://{BUCKET_NAME}/checkpoints/kafka_logs"
-        logger.info("Spark streaming query started. Will reload IOCs in 3 hours.")
-        query.awaitTermination(timeout=3 * 60 * 60)
+    logger.info("Parsed network stream into a DataFrame")
+
+    ioc_match_alert_df = ioc_match_detection(parsed_df, ioc_df)
+    port_scan_alert_df = port_scan_detection(parsed_df)
+    data_exfiltration_alert_df = data_exfiltration_detection(parsed_df)
+    
+    alerts_df = ioc_match_alert_df.unionByName(port_scan_alert_df).unionByName(data_exfiltration_alert_df)
+
+    kafka_output_df = alerts_df.select(
+        F.to_json(F.struct("*")).alias("value")
+    )
+
+    # Write stream to Kafka
+    query = kafka_output_df.writeStream \
+        .format("kafka") \
+        .option("kafka.bootstrap.servers", KAFKA_BROKER) \
+        .option("topic", ALERTS_TOPIC) \
+        .option("checkpointLocation", "/opt/bitnami/spark/checkpoints") \
+        .trigger(processingTime="15 seconds") \
+        .start()
+
+    logger.info("Spark streaming query started. Will reload IOCs in 3 hours.")
+    # query.awaitTermination(timeout=3 * 60 * 60)
         
-        logger.info("3 hours passed. Stopping query to refresh IOC database...")
-        query.stop()
+        # logger.info("3 hours passed. Stopping query to refresh IOC database...")
+    query.awaitTermination()
