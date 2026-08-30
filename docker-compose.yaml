@@ -84,8 +84,10 @@ services:
         environment:
             - SPARK_MODE=worker
             - SPARK_MASTER_URL=spark://spark-master:7077
-            - SPARK_WORKER_MEMORY=2g
-            - SPARK_WORKER_CORES=3
+            - SPARK_WORKER_CORES=4
+            - SPARK_WORKER_MEMORY=4g
+        volumes:
+            - spark_checkpoints:/opt/bitnami/spark/checkpoints
         ports:
             - "8081:8081"
         depends_on:
@@ -100,10 +102,12 @@ services:
         environment:
             - SPARK_MODE=worker
             - SPARK_MASTER_URL=spark://spark-master:7077
-            - SPARK_WORKER_MEMORY=2g
-            - SPARK_WORKER_CORES=3
+            - SPARK_WORKER_CORES=4
+            - SPARK_WORKER_MEMORY=4g
+        volumes:
+            - spark_checkpoints:/opt/bitnami/spark/checkpoints
         ports:
-            - "8083:8083"
+            - "8083:8081"
         depends_on:
             - spark-master
 
@@ -122,16 +126,14 @@ services:
             /opt/bitnami/spark/bin/spark-submit
             --master spark://spark-master:7077
             --conf spark.submit.deployMode=client
-            --conf spark.cores.max=2
-            --conf spark.executor.cores=2
-            --conf spark.executor.memory=1g
+            --conf spark.executor.memory=3g
             --conf spark.driver.memory=1g
             /opt/bitnami/spark/apps/alert_engine.py
         volumes:
             - ./src/spark:/opt/bitnami/spark/apps
             - ./src/utils.py:/opt/bitnami/spark/apps/utils.py
             - ./src/logger.py:/opt/bitnami/spark/apps/logger.py
-            - spark_checkpoint:/opt/bitnami/spark/checkpoints
+            - spark_checkpoints:/opt/bitnami/spark/checkpoints
         depends_on:
             - spark-master
             - spark-worker
@@ -210,115 +212,115 @@ services:
                 condition: service_healthy
 
 
-    # postgres:
-    #     container_name: postgres
-    #     image: postgres:15
-    #     environment:
-    #         - POSTGRES_USER=postgres
-    #         - POSTGRES_PASSWORD=postgres
-    #         - POSTGRES_DB=airflow
-    #         - POSTGRES_PORT=5432
-    #     ports:
-    #         - "5432:5432"
-    #     volumes:
-    #         - postgres_persistent_data:/var/lib/postgresql/data
-    #     healthcheck:
-    #         test: ["CMD-SHELL", "pg_isready -U postgres"]
-    #         interval: 10s
-    #         timeout: 5s
-    #         retries: 5
+    postgres:
+        container_name: postgres
+        image: postgres:15
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=airflow
+            - POSTGRES_PORT=5432
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_persistent_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
-    # airflow-init:
-    #     build:
-    #         context: .
-    #         dockerfile: ./src/airflow/Dockerfile.airflow
-    #     container_name: airflow_init
-    #     env_file:
-    #         - .env
-    #     environment:
-    #         - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-    #         - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
-    #         - AIRFLOW__CORE__FERNET_KEY=FB0o_zt4e3Ziq3LdUUO7F2Z95cvFFx16hU8jTeR1ASM=
-    #         - AIRFLOW__CORE__LOAD_EXAMPLES=False
-    #         - AIRFLOW__LOGGING__LOGGING_LEVEL=INFO
-    #     volumes:
-    #         - ./src/airflow/dags:/opt/airflow/dags
-    #         - airflow_logs:/opt/airflow/logs
-    #         - airflow_plugins:/opt/airflow/plugins
-    #         - ./src/threat_intell:/opt/airflow/scripts/threat_intell
-    #         - ./src/spark:/opt/airflow/scripts/spark
-    #         - ./src/utils.py:/opt/airflow/scripts/utils.py
-    #         - ./src/logger.py:/opt/airflow/scripts/logger.py
-    #     depends_on:
-    #         postgres:
-    #             condition: service_healthy
-    #     entrypoint: /bin/bash
-    #     command:
-    #         - -c
-    #         - |
-    #           airflow db migrate
-    #           airflow users create --role Admin --username airflow --password airflow --email airflow@airflow.com --firstname airflow --lastname airflow || true
-    #     restart: on-failure
+    airflow-init:
+        build:
+            context: .
+            dockerfile: ./src/airflow/Dockerfile.airflow
+        container_name: airflow_init
+        env_file:
+            - .env
+        environment:
+            - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+            - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
+            - AIRFLOW__CORE__FERNET_KEY=FB0o_zt4e3Ziq3LdUUO7F2Z95cvFFx16hU8jTeR1ASM=
+            - AIRFLOW__CORE__LOAD_EXAMPLES=False
+            - AIRFLOW__LOGGING__LOGGING_LEVEL=INFO
+        volumes:
+            - ./src/airflow/dags:/opt/airflow/dags
+            - airflow_logs:/opt/airflow/logs
+            - airflow_plugins:/opt/airflow/plugins
+            - ./src/threat_intell:/opt/airflow/scripts/threat_intell
+            - ./src/spark:/opt/airflow/scripts/spark
+            - ./src/utils.py:/opt/airflow/scripts/utils.py
+            - ./src/logger.py:/opt/airflow/scripts/logger.py
+        depends_on:
+            postgres:
+                condition: service_healthy
+        entrypoint: /bin/bash
+        command:
+            - -c
+            - |
+              airflow db migrate
+              airflow users create --role Admin --username airflow --password airflow --email airflow@airflow.com --firstname airflow --lastname airflow || true
+        restart: on-failure
 
-    # airflow-webserver:
-    #     build:
-    #         context: .
-    #         dockerfile: ./src/airflow/Dockerfile.airflow
-    #     container_name: airflow_webserver
-    #     env_file:
-    #         - .env
-    #     environment:
-    #         - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-    #         - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
-    #         - AIRFLOW__CORE__FERNET_KEY=FB0o_zt4e3Ziq3LdUUO7F2Z95cvFFx16hU8jTeR1ASM=
-    #         - AIRFLOW__CORE__LOAD_EXAMPLES=False
-    #         - AIRFLOW__LOGGING__LOGGING_LEVEL=INFO
-    #     volumes:
-    #         - ./src/airflow/dags:/opt/airflow/dags
-    #         - airflow_logs:/opt/airflow/logs
-    #         - airflow_plugins:/opt/airflow/plugins
-    #         - ./src/threat_intell:/opt/airflow/scripts/threat_intell
-    #         - ./src/spark:/opt/airflow/scripts/spark
-    #         - ./src/utils.py:/opt/airflow/scripts/utils.py
-    #         - ./src/logger.py:/opt/airflow/scripts/logger.py
-    #     depends_on:
-    #         postgres:
-    #             condition: service_healthy
-    #         airflow-init:
-    #             condition: service_completed_successfully
-    #     command: webserver
-    #     ports:
-    #         - "8082:8080"
-    #     restart: always
+    airflow-webserver:
+        build:
+            context: .
+            dockerfile: ./src/airflow/Dockerfile.airflow
+        container_name: airflow_webserver
+        env_file:
+            - .env
+        environment:
+            - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+            - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
+            - AIRFLOW__CORE__FERNET_KEY=FB0o_zt4e3Ziq3LdUUO7F2Z95cvFFx16hU8jTeR1ASM=
+            - AIRFLOW__CORE__LOAD_EXAMPLES=False
+            - AIRFLOW__LOGGING__LOGGING_LEVEL=INFO
+        volumes:
+            - ./src/airflow/dags:/opt/airflow/dags
+            - airflow_logs:/opt/airflow/logs
+            - airflow_plugins:/opt/airflow/plugins
+            - ./src/threat_intell:/opt/airflow/scripts/threat_intell
+            - ./src/spark:/opt/airflow/scripts/spark
+            - ./src/utils.py:/opt/airflow/scripts/utils.py
+            - ./src/logger.py:/opt/airflow/scripts/logger.py
+        depends_on:
+            postgres:
+                condition: service_healthy
+            airflow-init:
+                condition: service_completed_successfully
+        command: webserver
+        ports:
+            - "8082:8080"
+        restart: always
 
-    # airflow-scheduler:
-    #     build:
-    #         context: .
-    #         dockerfile: ./src/airflow/Dockerfile.airflow
-    #     container_name: airflow_scheduler
-    #     env_file:
-    #         - .env
-    #     environment:
-    #         - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-    #         - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
-    #         - AIRFLOW__CORE__FERNET_KEY=FB0o_zt4e3Ziq3LdUUO7F2Z95cvFFx16hU8jTeR1ASM=
-    #         - AIRFLOW__CORE__LOAD_EXAMPLES=False
-    #         - AIRFLOW__LOGGING__LOGGING_LEVEL=INFO
-    #     volumes:
-    #         - ./src/airflow/dags:/opt/airflow/dags
-    #         - airflow_logs:/opt/airflow/logs
-    #         - airflow_plugins:/opt/airflow/plugins
-    #         - ./src/threat_intell:/opt/airflow/scripts/threat_intell
-    #         - ./src/spark:/opt/airflow/scripts/spark
-    #         - ./src/utils.py:/opt/airflow/scripts/utils.py
-    #         - ./src/logger.py:/opt/airflow/scripts/logger.py
-    #     depends_on:
-    #         postgres:
-    #             condition: service_healthy
-    #         airflow-init:
-    #             condition: service_completed_successfully
-    #     command: scheduler
-    #     restart: always
+    airflow-scheduler:
+        build:
+            context: .
+            dockerfile: ./src/airflow/Dockerfile.airflow
+        container_name: airflow_scheduler
+        env_file:
+            - .env
+        environment:
+            - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+            - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
+            - AIRFLOW__CORE__FERNET_KEY=FB0o_zt4e3Ziq3LdUUO7F2Z95cvFFx16hU8jTeR1ASM=
+            - AIRFLOW__CORE__LOAD_EXAMPLES=False
+            - AIRFLOW__LOGGING__LOGGING_LEVEL=INFO
+        volumes:
+            - ./src/airflow/dags:/opt/airflow/dags
+            - airflow_logs:/opt/airflow/logs
+            - airflow_plugins:/opt/airflow/plugins
+            - ./src/threat_intell:/opt/airflow/scripts/threat_intell
+            - ./src/spark:/opt/airflow/scripts/spark
+            - ./src/utils.py:/opt/airflow/scripts/utils.py
+            - ./src/logger.py:/opt/airflow/scripts/logger.py
+        depends_on:
+            postgres:
+                condition: service_healthy
+            airflow-init:
+                condition: service_completed_successfully
+        command: scheduler
+        restart: always
     
 
 volumes:
@@ -327,4 +329,4 @@ volumes:
     postgres_persistent_data:
     airflow_logs:
     airflow_plugins:
-    spark_checkpoint:
+    spark_checkpoints:

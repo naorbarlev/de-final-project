@@ -312,12 +312,7 @@ def load_ioc_db(spark: SparkSession) -> DataFrame:
 if __name__ == "__main__":
     # Initialize Spark Session
     spark = SparkSession.builder \
-    .appName("KafkaToKafkaStreaming") \
-    .config("spark.local.dir", "/opt/bitnami/spark/rocksdb-tmp") \
-    .config("spark.sql.streaming.stateStore.providerClass",
-            "org.apache.spark.sql.execution.streaming.state.RocksDBStateStoreProvider") \
-    .config("spark.sql.streaming.stateStore.rocksdb.changelogCheckpointing.enabled", "true") \
-    .config("spark.sql.streaming.minBatchesToRetain", "10") \
+    .appName("AlertEngine") \
     .getOrCreate()
         
     sc = spark.sparkContext
@@ -333,15 +328,7 @@ if __name__ == "__main__":
     hadoop_conf.set("fs.s3a.connection.ssl.enabled", "false")
     hadoop_conf.set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
     
-    hadoop_conf.set("fs.s3a.connection.maximum", "200")
-    hadoop_conf.set("fs.s3a.threads.max", "64")
-    hadoop_conf.set("fs.s3a.fast.upload", "true")
-    hadoop_conf.set("fs.s3a.fast.upload.buffer", "bytebuffer")
-    hadoop_conf.set("fs.s3a.change.detection.version.required", "false")
-    hadoop_conf.set("fs.s3a.attempts.maximum", "3")
-    
     spark.conf.set("spark.sql.shuffle.partitions", "8")
-    
 
     while True:
         logger.info("Loading IOC database from MinIO")

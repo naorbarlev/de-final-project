@@ -21,6 +21,9 @@ ENV SCALA_BINARY_VERSION=2.12
 ENV KAFKA_CLIENTS_VERSION=3.4.1
 ENV COMMONS_POOL_VERSION=2.11.1
 
+RUN mkdir -p /opt/bitnami/spark/checkpoints && \
+    chown -R 1001:1001 /opt/bitnami/spark/checkpoints
+
 #Download the JARs directly into Bitnami's specific Spark jars folder
 RUN curl -sS https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/${HADOOP_VERSION}/hadoop-aws-${HADOOP_VERSION}.jar \
     -o /opt/bitnami/spark/jars/hadoop-aws-${HADOOP_VERSION}.jar \
