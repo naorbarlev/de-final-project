@@ -125,9 +125,11 @@ services:
         command: >
             /opt/bitnami/spark/bin/spark-submit
             --master spark://spark-master:7077
-            --conf spark.submit.deployMode=client
-            --conf spark.executor.memory=3g
-            --conf spark.driver.memory=1g
+            --deploy-mode client
+            --driver-memory 1g
+            --executor-memory 2g
+            --executor-cores 2
+            --total-executor-cores 4
             /opt/bitnami/spark/apps/alert_engine.py
         volumes:
             - ./src/spark:/opt/bitnami/spark/apps
